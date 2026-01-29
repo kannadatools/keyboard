@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>⌨️ Kannada Transliterator (v25.5)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Karnataka Flag Theme */
+            --primary: #d32f2f;       
+            --primary-dark: #b71c1c;
+            --accent: #fbc02d;        
+            --bg: #fffde7;
+            --surface: #ffffff;
+            --border: #ffecb3;
+            --text: #3e2723;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: var(--bg); padding: 20px; color: var(--text); 
+        }
+        
+        .container { 
+            max-width: 1200px; margin: 0 auto; background: var(--surface); 
+            padding: 30px; border-radius: 16px; 
+            box-shadow: 0 10px 30px rgba(251, 192, 45, 0.3); 
+            border: 1px solid var(--accent);
+        }
+        
+        h1 { 
+            color: var(--primary); margin-top: 0; font-size: 28px; 
+            display: flex; align-items: center; gap: 10px; 
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 15px; margin-bottom: 25px;
+        }
+        
+        .toolbar { 
+            background: #fff9c4; padding: 15px; border-radius: 12px; margin-bottom: 20px; 
+            display: flex; gap: 20px; align-items: center; flex-wrap: wrap; 
+            border: 1px solid var(--accent);
+        }
+        
+        .control-group { display: flex; flex-direction: column; gap: 4px; }
+        .label { font-size: 11px; font-weight: bold; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        select { padding: 8px 12px; border-radius: 6px; border: 1px solid #f9a825; font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; }
+        select:focus { outline: 2px solid var(--primary); }
+
+        .toggle-group { display: flex; gap: 15px; align-items: center; border-left: 2px solid #f9a825; padding-left: 15px; }
+        .toggle-label { display: flex; align-items: center; font-weight: 600; cursor: pointer; user-select: none; font-size: 14px; }
+        .toggle-label input { width: 16px; height: 16px; margin-right: 6px; accent-color: var(--primary); }
+        .shortcut { background: #ffe0b2; color: #e65100; font-size: 0.75em; padding: 1px 5px; border-radius: 4px; margin-left: 4px; }
+
+        button { 
+            background: var(--primary); color: white; border: none; padding: 10px 20px; 
+            border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; 
+            transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        button:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+        button.info { background: #fbc02d; color: #3e2723; }
+        button.info:hover { background: #f9a825; }
+        button.secondary { background: #795548; }
+        button.font-btn { padding: 8px 14px; background: #fff59d; color: #3e2723; font-size: 16px; min-width: 40px; margin-left: 5px; }
+        button.font-btn:hover { background: #fbc02d; }
+        button.emoji-btn { background: #fff9c4; color: #333; border: 1px solid #fbc02d; }
+        button.emoji-btn:hover { background: #fff59d; }
+
+        .virtual-keys { 
+            display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; 
+            padding: 12px; background: #fffde7; border: 1px solid #fff59d; border-radius: 12px; 
+        }
+        .v-btn { 
+            background: white; border: 1px solid #fbc02d; color: #bf360c; 
+            font-family: 'Noto Sans Kannada', sans-serif; font-size: 20px; 
+            padding: 4px 14px; border-radius: 6px; cursor: pointer; min-width: 44px;
+            display: flex; justify-content: center; align-items: center; transition: all 0.1s;
+        }
+        .v-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .v-btn.vedic { background: #e1f5fe; border-color: #81d4fa; color: #0277bd; }
+        .v-btn.vedic:hover { background: #0288d1; color: white; }
+        .v-btn.control { background: #eceff1; border-color: #cfd8dc; color: #455a64; font-size: 15px; font-weight: bold; }
+
+        textarea { 
+            width: 100%; height: 400px; padding: 25px; 
+            font-family: 'Noto Sans Kannada', sans-serif; font-size: 28px; 
+            border: 2px solid #ffecb3; border-radius: 12px; box-sizing: border-box; 
+            line-height: 1.8; color: #212121;
+        }
+        textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(211, 47, 47, 0.1); }
+
+        .help-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 30px; }
+        .help-box { background: white; padding: 0; border: 1px solid #ffecb3; border-radius: 8px; overflow: hidden; }
+        .help-box h3 { background: #fff9c4; color: #bf360c; margin: 0; padding: 10px 15px; font-size: 15px; border-bottom: 2px solid #fbc02d; }
+        .row { display: flex; justify-content: space-between; padding: 8px 15px; border-bottom: 1px solid #f5f5f5; font-size: 14px; }
+        .key { font-family: 'Consolas', monospace; font-weight: bold; color: #c62828; background: #fff5f5; padding: 2px 6px; border-radius: 4px; }
+        .val { font-family: 'Noto Sans Kannada', sans-serif; font-weight: bold; font-size: 16px; }
+
+        #toast { visibility: hidden; min-width: 200px; background-color: #3e2723; color: #fff; text-align: center; border-radius: 50px; padding: 12px 20px; position: fixed; bottom: 30px; right: 30px; opacity: 0; transition: all 0.3s; z-index: 1001; font-weight: 600; }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+        .modal-content { background-color: #fff; padding: 30px; border-radius: 16px; width: 90%; max-width: 1000px; max-height: 85vh; overflow-y: auto; position: relative; border-top: 5px solid var(--accent); }
+        .close-modal { position: absolute; top: 20px; right: 25px; font-size: 30px; cursor: pointer; color:#999; }
+        .full-map-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+        .map-table { width: 100%; border-collapse: collapse; margin-top: 0; }
+        .map-table th { text-align: left; background: #fffde7; padding: 8px; font-size: 12px; color: #f57f17; text-transform: uppercase; border-bottom: 2px solid #fbc02d; }
+        .map-table td { border-bottom: 1px solid #fff9c4; padding: 8px; }
+
+        /* Emoji Grid */
+        .emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 10px; margin-top: 10px; }
+        .emoji-item { font-size: 24px; cursor: pointer; padding: 5px; border-radius: 4px; text-align: center; border: 1px solid transparent; }
+        .emoji-item:hover { background: #fff9c4; border-color: #fbc02d; transform: scale(1.2); }
+        .emoji-cat { font-weight: bold; color: var(--primary); margin-top: 15px; margin-bottom: 5px; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>⌨️ Kannada Transliterator</h1>
+    
+    <div class="toolbar">
+        <div class="control-group">
+            <span class="label">Input Scheme</span>
+            <select id="schemeSelect" onchange="changeScheme()">
+                <option value="sampurna">ಸಂಪೂರ್ಣ (Native)</option>
+                <option value="baraha">ಬರಹ (Standard)</option>
+            </select>
+        </div>
+
+        <div class="toggle-group" id="autoAnusvaraGroup">
+            <label class="toggle-label" title="Alt + A"><input type="checkbox" id="autoAnusvara" checked> Auto Anusvara <span class="shortcut">Alt+A</span></label>
+        </div>
+
+        <div class="toggle-group">
+            <label class="toggle-label" title="Alt + M"><input type="checkbox" id="mantraMode"> Mantra <span class="shortcut">Alt+M</span></label>
+            <label class="toggle-label" title="Alt + N"><input type="checkbox" id="numMode"> Numbers <span class="shortcut">Alt+N</span></label>
+            <label class="toggle-label" title="Alt + E"><input type="checkbox" id="engMode"> English <span class="shortcut">Alt+E</span></label>
+        </div>
+        
+        <div>
+            <button class="font-btn" onclick="changeFontSize(2)" title="Increase Font">A+</button>
+            <button class="font-btn" onclick="changeFontSize(-2)" title="Decrease Font">A-</button>
+        </div>
+
+        <button class="emoji-btn" onclick="openEmojiModal()" title="Insert Emoji">😀 Emoji</button>
+        <button class="info" onclick="openMapModal()" title="View Full Mapping">Map</button>
+        <div style="flex-grow:1;"></div>
+        
+        <button onclick="saveText()">Download</button>
+        <button onclick="copyText()">Copy</button>
+        <button class="secondary" onclick="clearText()">Clear</button>
+    </div>
+
+    <div class="virtual-keys" id="vKeypad"></div>
+
+    <textarea id="editor" placeholder=""></textarea>
+
+    <div class="help-grid" id="helpGrid"></div>
+</div>
+
+<div id="toast">Mode Changed</div>
+
+<div id="fullMapModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeMapModal()">&times;</span>
+        <h2 id="mapTitle" style="color: var(--primary); margin-top:0; border-bottom:1px solid #eee; padding-bottom:15px; margin-bottom:20px;">Character Mapping</h2>
+        <div class="full-map-grid" id="modalMapGrid"></div>
+    </div>
+</div>
+
+<div id="emojiModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <span class="close-modal" onclick="closeEmojiModal()">&times;</span>
+        <h2 style="color: var(--primary); margin-top:0; border-bottom:1px solid #eee; padding-bottom:15px;">Insert Emoji</h2>
+        <div id="emojiContainer" style="max-height: 50vh; overflow-y: auto;"></div>
+    </div>
+</div>
+
+<script>
+    // --- 1. CONSTANTS ---
+    const VIRAMA = '\u0CCD';
+    const ZWNJ = '\u200C';
+    const ZWJ = '\u200D';
+    const NUKTA = '\u0CBC';
+
+    // Auto Anusvara Trigger Groups
+    const autoAnusvaraTriggers = {
+        'n': ['k','g','c','j','T','D','t','d'], 
+        'm': ['p','b','m'] 
+    };
+
+    const emojis = {
+        "Faces": ["😀","😁","😂","😊","🥰","😎","🤔","😐","😑","😮","😥","😭","😱","😡","🙏","👍","👎","👋"],
+        "Symbols": ["❤️","✨","🔥","⭐","🕉️","🚩","☸️","✝️","☪️","✅","❌","❓","❗"],
+        "Nature": ["🌺","🌻","🌲","🌞","🌙","🌧️","🌊","🔥","🐄","🐘","🐕","🐅"],
+        "Objects": ["💻","📱","📚","🖊️","✉️","🎁","🔔","🛒","🚗","🚲","🏠"]
+    };
+
+    // --- 2. SCHEMES ---
+    const schemes = {
+        sampurna: {
+            name: "Sampurna",
+            breakKey: '=', 
+            zwjKey: 'x',   
+            forceHalantKey: '^',
+            vowels: { 
+                "a": "ಅ", "aa": "ಆ", "A": "ಆ", "i": "ಇ", "ee": "ಈ", "I": "ಈ", "ii": "ಈ", 
+                "u": "ಉ", "oo": "ಊ", "U": "ಊ", "uu": "ಊ", "e": "ಎ", "E": "ಏ", "ai": "ಐ", 
+                "o": "ಒ", "O": "ಓ", "au": "ಔ", "ou": "ಔ", "R": "ಋ", "RR": "ೠ", "RU": "ೠ", 
+                "q": "ಌ", "Q": "ೡ", 
+                "M": "ಂ", "MM": "ಁ", "H": "ಃ"
+            },
+            matras: { 
+                "a": "", "aa": "ಾ", "A": "ಾ", "i": "ಿ", "ee": "ೀ", "I": "ೀ", "ii": "ೀ", 
+                "u": "ು", "oo": "ೂ", "U": "ೂ", "uu": "ೂ", "e": "ೆ", "E": "ೇ", "ai": "ೈ", 
+                "o": "ೊ", "O": "ೋ", "au": "ೌ", "ou": "ೌ", "R": "ೃ", "RR": "ೄ", "RU": "ೄ", 
+                "q": "ೢ", "Q": "ೣ" 
+            },
+            consonants: { 
+                "k": "ಕ್", "kh": "ಖ್", "g": "ಗ್", "gh": "ಘ್", "G": "ಙ್", 
+                "c": "ಚ್", "ch": "ಛ್", "j": "ಜ್", "jh": "ಝ್", "J": "ಞ್", 
+                "T": "ಟ್", "Th": "ಠ್", "D": "ಡ್", "Dh": "ಢ್", "N": "ಣ್", 
+                "t": "ತ್", "th": "ಥ್", "d": "ದ್", "dh": "ಧ್", "n": "ನ್", 
+                "p": "ಪ್", "ph": "ಫ್", "b": "ಬ್", "bh": "ಭ್", "m": "ಮ್", 
+                "y": "ಯ್", "r": "ರ್", "l": "ಲ್", "L": "ಳ್", "v": "ವ್", 
+                "sh": "ಶ್", "s": "ಸ್", "h": "ಹ್", "Sh": "ಷ್", "S": "ಷ್", 
+                "X": "ಱ್", "XX": "ೞ್", 
+                "z": "ಜ"+NUKTA+VIRAMA, "Z": "ಝ"+NUKTA+VIRAMA, "f": "ಪ"+NUKTA+VIRAMA, "F": "ಫ"+NUKTA+VIRAMA 
+            },
+            specials: { 
+                "|": "danda", 
+                "||": "ddanda", 
+                "\\": "danda", 
+                "\\\\": "ddanda",
+                "OM": "om" 
+            },
+            mantra: { "_": "anudatta", ";": "udatta", ":": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha" },
+            help: [
+                { title: "Control Keys", rows: [["=", "k=ha → ಕ್ಹ"], ["^", "r^ShA → ರ್‌ಷಾ"], ["x", "rxya → ರ‍್ಯ (ರ್ಯ ಬದಲು)"]] },
+                { title: "Mantra / Vedic", rows: [["_", "॒ (ಅನುದಾತ್ತ)"], [";", "॑ (ಸ್ವರಿತ)"], [":", "᳚ (ದೀರ್ಘ ಸ್ವರಿತ)"], ["@", "ಗ್ಂ"], ["#", "ಗ್ಗ್"], ["$", "ಽ (ಅವಗ್ರಹ)"]] },
+                { title: "Specials / Punctuation", rows: [["M", "ಂ (ಅನುಸ್ವಾರ)"], ["MM", "ಁ (ಚಂದ್ರಬಿಂದು)"], ["H", "ಃ (ವಿಸರ್ಗ)"], ["OM", "ಓಂ"], ["|", "। (ದಂಡ)"], ["||", "॥ (2 ದಂಡ)"]] },
+                { title: "Special Consonants", rows: [["X", "ಱ (Rra)"], ["XX", "ೞ (Lla)"], ["f", "ಪ಼ (Fa)"], ["z", "ಜ಼ (Za)"]] }
+            ],
+            buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "ಗ್ಂ", "ಗ್ಗ್", "ꣳ", "॒", "॑", "᳚", "।", "॥", "ಽ"]
+        },
+        baraha: {
+            name: "Baraha",
+            breakKey: '~',
+            zwjKey: '^',
+            vowels: { 
+                "a": "ಅ", "aa": "ಆ", "A": "ಆ", "i": "ಇ", "ee": "ಈ", "I": "ಈ", "u": "ಉ", "oo": "ಊ", "U": "ಊ", 
+                "Ru": "ಋ", "RU": "ೠ", "~lu": "ಌ", "~lU": "ೡ", 
+                "e": "ಎ", "E": "ಏ", "ai": "ಐ", "o": "ಒ", "O": "ಓ", "au": "ಔ", "ou": "ಔ", 
+                "M": "ಂ", "~M": "ಁ", "H": "ಃ" 
+            },
+            matras: { 
+                "a": "", "aa": "ಾ", "A": "ಾ", "i": "ಿ", "ee": "ೀ", "I": "ೀ", "u": "ು", "oo": "ೂ", "U": "ೂ", 
+                "Ru": "ೃ", "RU": "ೄ", "~lu": "ೢ", "~lU": "ೣ", 
+                "e": "ೆ", "E": "ೇ", "ai": "ೈ", "o": "ೊ", "O": "ೋ", "au": "ೌ", "ou": "ೌ" 
+            },
+            consonants: {
+                "k": "ಕ್", "K": "ಖ್", "kh": "ಖ್", "g": "ಗ್", "G": "ಘ್", "gh": "ಘ್", "~g": "ಙ್", "ng": "ಙ್",
+                "c": "ಚ್", "ch": "ಚ್", "C": "ಛ್", "Ch": "ಛ್", "j": "ಜ್", "J": "ಝ್", "jh": "ಝ್", "~j": "ಞ್", "ny": "ಞ್",
+                "T": "ಟ್", "Th": "ಠ್", "D": "ಡ್", "Dh": "ಢ್", "N": "ಣ್", 
+                "t": "ತ್", "th": "ಥ್", "d": "ದ್", "dh": "ಧ್", "n": "ನ್", 
+                "p": "ಪ್", "P": "ಫ್", "ph": "ಫ್", "b": "ಬ್", "B": "ಭ್", "bh": "ಭ್", "m": "ಮ್", 
+                "y": "ಯ್", "r": "ರ್", "l": "ಲ್", "L": "ಳ್", "v": "ವ್", "w": "ವ್", 
+                "sh": "ಶ್", "S": "ಶ್", "Sh": "ಷ್", "s": "ಸ್", "h": "ಹ್", 
+                "rx": "ಱ್", "~r": "ಱ್", "Lx": "ೞ್", "~l": "ೞ್",
+                "f": "ಫ"+NUKTA+VIRAMA, "z": "ಜ"+NUKTA+VIRAMA 
+            },
+            specials: { 
+                "|": "danda", 
+                "||": "ddanda", 
+                "\\": "danda", 
+                "\\\\": "ddanda",
+                "&": "avagraha", 
+                "Rs": "rupee", 
+                "OM": "om", 
+                "~M": "chandrabindu", 
+                "~lu": "ಌ" 
+            },
+            mantra: { },
+            help: [
+                { title: "Control Keys", rows: [["~", "Soft Break (rAj~kumAr)"], ["^", "ZWJ (Joiner)"]] },
+                { title: "Nasal / Old Consonants", rows: [["~g", "ಙ (Nga)"], ["~j", "ಞ (Nya)"], ["rx", "ಱ (Rra)"], ["Lx", "ೞ (Lla)"]] },
+                { title: "Specials / Vedic", rows: [["~M", "ಁ (Chandrabindu)"], ["&", "ಽ (Avagraha)"], ["~lu", "ಌ (Vocalic L)"], ["Rs", "₹ (Rupee)"], ["OM", "ಓಂ"]] }
+            ],
+            buttons: ["ಙ್", "ಞ್", "ಱ್", "ೞ್", "ಌ", "ಁ", "ಽ", "₹", "।", "॥", "ಗ್ಂ", "ಗ್ಗ್", "ꣳ", "॒", "॑", "᳚"]
+        }
+    };
+
+    const commonSpecial = { "|": "।", "||": "॥" }; 
+    const mantraSpecial = { "@": "ಗ್ಂ" + ZWNJ, "#": "ಗ್ಗ್" + ZWNJ, "_": "\u0952", ";": "\u0951", ":": "\u1CDA" };
+    const commonNumbers = { "0": "೦", "1": "೧", "2": "೨", "3": "೩", "4": "೪", "5": "೫", "6": "೬", "7": "೭", "8": "೮", "9": "೯" };
+    const specialChars = { "avagraha": "ಽ", "danda": "।", "ddanda": "॥", "om": "ಓಂ", "rupee": "₹", "anudatta": "\u0952", "udatta": "\u0951", "d_svarita": "\u1CDA", "chandrabindu": "ಁ" };
+    
+    // --- 3. STATE ---
+    let activeMap = schemes.sampurna; 
+    let state = { lastInput: "", lastOutput: "", lastType: "" };
+    let currentFontSize = 28;
+    let isBreakKeyPrefix = false; 
+
+    const editor = document.getElementById('editor');
+    const autoAnusvaraToggle = document.getElementById('autoAnusvara');
+    const mantraToggle = document.getElementById('mantraMode');
+    const numToggle = document.getElementById('numMode');
+    const engToggle = document.getElementById('engMode');
+    const schemeSelect = document.getElementById('schemeSelect');
+    const vKeypad = document.getElementById('vKeypad');
+
+    // --- 4. INIT ---
+    initUI();
+
+    function initUI() {
+        const selected = schemeSelect.value;
+        activeMap = schemes[selected];
+        
+        // HIDE AUTO ANUSVARA IF NOT SAMPURNA
+        const aaGroup = document.getElementById('autoAnusvaraGroup');
+        if (aaGroup) aaGroup.style.display = (activeMap.name === "Sampurna") ? "flex" : "none";
+
+        // AUTO-DETECT: Does the break key start any consonant/special sequence?
+        const bk = activeMap.breakKey;
+        isBreakKeyPrefix = Object.keys(activeMap.consonants).some(k => k.startsWith(bk)) || 
+                           Object.keys(activeMap.specials).some(k => k.startsWith(bk));
+
+        updateHelpGrid();
+        updateVirtualKeys();
+        editor.focus();
+    }
+
+    function changeScheme() {
+        initUI();
+        showToast(`Switched to ${activeMap.name}`);
+        state.lastInput = "";
+    }
+
+    function changeFontSize(delta) {
+        currentFontSize += delta;
+        if(currentFontSize < 12) currentFontSize = 12;
+        if(currentFontSize > 60) currentFontSize = 60;
+        editor.style.fontSize = currentFontSize + "px";
+        editor.focus();
+    }
+
+    function updateVirtualKeys() {
+        vKeypad.innerHTML = "";
+        
+        // Break Key
+        const btnB = document.createElement('button');
+        btnB.className = "v-btn control";
+        btnB.innerHTML = (activeMap.breakKey || "~") + " <small>[Break]</small>";
+        btnB.title = "Stop Merge";
+        btnB.onclick = () => insertChar(activeMap.breakKey || "~");
+        vKeypad.appendChild(btnB);
+
+        // ZWJ Key
+        const btnZ = document.createElement('button');
+        btnZ.className = "v-btn control";
+        btnZ.innerHTML = activeMap.zwjKey + " <small>[ZWJ]</small>";
+        btnZ.title = "Zero Width Joiner";
+        btnZ.onclick = () => insertChar(activeMap.zwjKey);
+        vKeypad.appendChild(btnZ);
+
+        // Force Halant (Sampurna only)
+        if(activeMap.forceHalantKey) {
+            const btnFH = document.createElement('button');
+            btnFH.className = "v-btn control";
+            btnFH.innerHTML = activeMap.forceHalantKey + " <small>[Halant]</small>";
+            btnFH.title = "Force Halant (ZWNJ)";
+            btnFH.onclick = () => insertChar(activeMap.forceHalantKey);
+            vKeypad.appendChild(btnFH);
+        }
+
+        activeMap.buttons.forEach(char => {
+            const btn = document.createElement('button');
+            btn.className = "v-btn";
+            let display = char.replace(ZWNJ, '').replace(ZWJ, '');
+            if(['॒','॑','᳚','ꣳ','ಽ'].includes(display)) btn.className += " vedic";
+            
+            btn.innerText = display;
+            btn.onclick = () => insertDirect(char);
+            vKeypad.appendChild(btn);
+        });
+    }
+
+    function updateHelpGrid() {
+        const grid = document.getElementById('helpGrid'); grid.innerHTML = "";
+        activeMap.help.forEach(section => {
+            let html = `<div class="help-box"><h3>${section.title}</h3>`;
+            section.rows.forEach(row => html += `<div class="row"><span class="key">${row[0]}</span> <span class="val">${row[1]}</span></div>`);
+            html += `</div>`; grid.innerHTML += html;
+        });
+        grid.innerHTML += `<div class="help-box"><h3>Shortcuts</h3>
+            <div class="row"><span class="key">Alt+A</span> <span>Auto Anusvara</span></div>
+            <div class="row"><span class="key">Alt+M</span> <span>Mantra</span></div>
+            <div class="row"><span class="key">Alt+N</span> <span>Numbers</span></div>
+            <div class="row"><span class="key">Alt+E</span> <span>English</span></div></div>`;
+    }
+
+    // --- 5. ENGINE ---
+    
+    function insertChar(char) {
+        if (char === activeMap.breakKey && !isBreakKeyPrefix) { handleBreak(); return; } 
+        if (char === activeMap.forceHalantKey) { handleForceHalant(); return; }
+        const start = editor.selectionStart;
+        const current = editor.value;
+        editor.value = current.slice(0, start) + char + current.slice(start);
+        editor.focus();
+        editor.setSelectionRange(start + char.length, start + char.length);
+        processInput(char, start + char.length);
+    }
+
+    function insertDirect(char) {
+        const start = editor.selectionStart;
+        const current = editor.value;
+        editor.value = current.slice(0, start) + char + current.slice(start);
+        editor.focus();
+        editor.setSelectionRange(start + char.length, start + char.length);
+        state.lastInput = ""; // Break chain
+    }
+
+    function handleBreak() {
+        editor.focus();
+        state.lastInput = ""; state.lastOutput = ""; state.lastType = "";
+    }
+
+    function handleForceHalant() {
+        const start = editor.selectionStart;
+        const current = editor.value;
+        editor.value = current.slice(0, start) + ZWNJ + current.slice(start);
+        editor.focus();
+        const newPos = start + 1; 
+        editor.setSelectionRange(newPos, newPos);
+        state.lastInput = ""; state.lastOutput = ""; state.lastType = "";
+    }
+
+    editor.addEventListener('keydown', (e) => {
+        if (e.altKey) {
+            let changed = false; let msg = "";
+            if (e.key.toLowerCase() === 'e') { engToggle.checked = !engToggle.checked; msg = engToggle.checked ? "Eng ON" : "Eng OFF"; changed = true; }
+            else if (e.key.toLowerCase() === 'm') { mantraToggle.checked = !mantraToggle.checked; msg = mantraToggle.checked ? "Mantra ON" : "Mantra OFF"; changed = true; }
+            else if (e.key.toLowerCase() === 'n') { numToggle.checked = !numToggle.checked; msg = numToggle.checked ? "Num ON" : "Num OFF"; changed = true; }
+            else if (e.key.toLowerCase() === 'a') { autoAnusvaraToggle.checked = !autoAnusvaraToggle.checked; msg = autoAnusvaraToggle.checked ? "Auto Anusvara ON" : "Auto Anusvara OFF"; changed = true; }
+            else if (e.key === '/') { openMapModal(); return; }
+            if (changed) { e.preventDefault(); showToast(msg); state.lastInput = ""; return; }
+        }
+        
+        // IGNORE modifier keys to avoid clearing state
+        if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') {
+            return; 
+        }
+
+        if (e.key.length > 1 && e.key !== 'Backspace') state.lastInput = "";
+        if (e.key === 'Backspace') state.lastInput = "";
+    });
+
+    editor.addEventListener('input', (e) => {
+        if (engToggle.checked) { state.lastInput = ""; return; }
+        if (e.inputType === 'deleteContentBackward') return;
+        
+        const start = editor.selectionStart;
+        const current = editor.value;
+        const charTyped = current.substring(start - 1, start);
+        if (!charTyped) return;
+
+        processInput(charTyped, start);
+    });
+
+    function processInput(charTyped, cursorPos) {
+        // --- STEP 1: LAZY BREAK RESOLUTION ---
+        if (isBreakKeyPrefix && state.lastInput === activeMap.breakKey) {
+            const combo = state.lastInput + charTyped;
+            const isValid = activeMap.consonants[combo] || activeMap.specials[combo] || activeMap.vowels[combo];
+            
+            if (!isValid) {
+                applyToEditor(cursorPos - 1, 1, ZWNJ, 'special', ""); 
+                state.lastInput = ""; 
+            }
+        }
+
+        // --- STEP 2: STANDARD BREAK KEY ---
+        if (!isBreakKeyPrefix && charTyped === activeMap.breakKey) {
+            applyToEditor(cursorPos, 1, "", 'special', ""); 
+            state.lastInput = ""; 
+            return;
+        }
+
+        // --- STEP 3: FORCE HALANT ---
+        if (activeMap.forceHalantKey && charTyped === activeMap.forceHalantKey) {
+            applyToEditor(cursorPos, 1, ZWNJ, 'special', ""); return;
+        }
+
+        // --- STEP 4: AUTO ANUSVARA ---
+        if (activeMap.name === "Sampurna" && autoAnusvaraToggle.checked && activeMap.consonants[charTyped]) {
+            let prevKey = state.lastInput;
+            
+            if ( (prevKey === 'n' && autoAnusvaraTriggers['n'].includes(charTyped)) || 
+                 (prevKey === 'm' && autoAnusvaraTriggers['m'].includes(charTyped) && charTyped !== 'm') ) {
+                
+                const prePos = cursorPos - 1; 
+                applyToEditor(prePos, 2, "ಂ", 'special', ""); 
+                cursorPos = cursorPos - 1;
+            }
+        }
+
+        let processed = false; let output = ""; let type = ""; let newKeyString = charTyped; let deleteCount = 1;
+
+        // --- STEP 5: ZWJ ---
+        if (charTyped === activeMap.zwjKey) {
+            const current = editor.value;
+            const beforeChar = current.substring(cursorPos - 2, cursorPos - 1);
+            if (state.lastType === 'consonant' || beforeChar === VIRAMA) {
+                deleteCount = 2; output = ZWJ + VIRAMA; type = 'consonant'; 
+                processed = true; state.lastInput = ""; 
+                applyToEditor(cursorPos, deleteCount, output, type, ""); return;
+            }
+        }
+
+        if (!processed && numToggle.checked && commonNumbers[charTyped]) { output = commonNumbers[charTyped]; type = 'number'; processed = true; }
+
+        else if (!processed && state.lastInput) {
+            const potentialMerge = state.lastInput + charTyped;
+            
+            if (activeMap.specials[potentialMerge]) {
+                deleteCount = state.lastOutput.length + 1; 
+                output = specialChars[activeMap.specials[potentialMerge]] || activeMap.specials[potentialMerge]; 
+                newKeyString = potentialMerge; type = 'special'; processed = true;
+            }
+            else if (activeMap.consonants[potentialMerge]) {
+                deleteCount = state.lastOutput.length + 1; output = activeMap.consonants[potentialMerge]; newKeyString = potentialMerge; type = 'consonant'; processed = true;
+            }
+            else if (activeMap.vowels[potentialMerge] || activeMap.matras[potentialMerge]) {
+                if (state.lastType === 'matra' || state.lastType === 'vowel') {
+                    let newOutput = (state.lastType === 'matra') ? activeMap.matras[potentialMerge] : activeMap.vowels[potentialMerge];
+                    if (newOutput !== undefined) { deleteCount = state.lastOutput.length + 1; output = newOutput; newKeyString = potentialMerge; type = state.lastType; processed = true; }
+                }
+            }
+            else if (mantraToggle.checked && activeMap.mantra && activeMap.mantra[potentialMerge]) {
+                deleteCount = state.lastOutput.length + 1; 
+                const val = activeMap.mantra[potentialMerge];
+                output = specialChars[val] || val; 
+                newKeyString = potentialMerge; type = 'special'; processed = true;
+            }
+            else if (mantraToggle.checked && mantraSpecial[potentialMerge]) {
+                deleteCount = state.lastOutput.length + 1; output = mantraSpecial[potentialMerge]; newKeyString = potentialMerge; type = 'special'; processed = true;
+            }
+        }
+
+        if (!processed) {
+            if (mantraToggle.checked && (activeMap.mantra && activeMap.mantra[charTyped] || mantraSpecial[charTyped])) { 
+                const val = (activeMap.mantra && activeMap.mantra[charTyped]);
+                output = val ? (specialChars[val] || val) : mantraSpecial[charTyped];
+                type = 'special'; processed = true; 
+            }
+            else if (activeMap.specials[charTyped]) { 
+                output = specialChars[activeMap.specials[charTyped]] || activeMap.specials[charTyped]; 
+                type = 'special'; processed = true; 
+            }
+            else if (activeMap.consonants[charTyped]) { output = activeMap.consonants[charTyped]; type = 'consonant'; processed = true; }
+            else if (activeMap.vowels[charTyped]) {
+                const current = editor.value;
+                const beforeTyped = current.substring(cursorPos - 2, cursorPos - 1);
+                
+                if (beforeTyped === VIRAMA && activeMap.matras[charTyped] !== undefined) { 
+                    deleteCount = 2; output = activeMap.matras[charTyped]; type = 'matra'; 
+                } 
+                else { 
+                    output = activeMap.vowels[charTyped]; type = 'vowel'; 
+                }
+                processed = true;
+            }
+        }
+
+        if (processed && output !== undefined) {
+            applyToEditor(cursorPos, deleteCount, output, type, newKeyString);
+        } else {
+            state.lastInput = charTyped; 
+            state.lastOutput = charTyped; 
+            state.lastType = 'english'; 
+        }
+    }
+
+    function applyToEditor(cursorPos, deleteCount, output, type, keyString) {
+        const currentVal = editor.value;
+        const preText = currentVal.substring(0, cursorPos - deleteCount);
+        const postText = currentVal.substring(cursorPos);
+        editor.value = preText + output + postText;
+        const newPos = preText.length + output.length;
+        editor.setSelectionRange(newPos, newPos);
+        state.lastInput = keyString; state.lastOutput = output; state.lastType = type;
+    }
+
+    // --- MODAL & TOAST ---
+    function showToast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.className = "show"; setTimeout(() => t.className = "", 2000); }
+    
+    // Map Modal
+    function openMapModal() { generateMapTable(); document.getElementById('fullMapModal').style.display = 'flex'; }
+    function closeMapModal() { document.getElementById('fullMapModal').style.display = 'none'; editor.focus(); }
+    
+    // Emoji Modal
+    function openEmojiModal() { 
+        const container = document.getElementById('emojiContainer');
+        if(container.innerHTML === "") {
+            for(let cat in emojis) {
+                const div = document.createElement('div');
+                div.innerHTML = `<div class="emoji-cat">${cat}</div><div class="emoji-grid">
+                    ${emojis[cat].map(e => `<div class="emoji-item" onclick="insertDirect('${e}'); closeEmojiModal()">${e}</div>`).join('')}
+                </div>`;
+                container.appendChild(div);
+            }
+        }
+        document.getElementById('emojiModal').style.display = 'flex'; 
+    }
+    function closeEmojiModal() { document.getElementById('emojiModal').style.display = 'none'; editor.focus(); }
+
+    window.onclick = function(e) { 
+        if(e.target == document.getElementById('fullMapModal')) closeMapModal();
+        if(e.target == document.getElementById('emojiModal')) closeEmojiModal();
+    }
+
+    function generateMapTable() {
+        const grid = document.getElementById('modalMapGrid'); 
+        grid.innerHTML = "";
+        const title = document.getElementById('mapTitle'); 
+        title.innerText = activeMap.name + " Complete Mapping";
+
+        const createSection = (name, dataObj, isControl = false) => {
+            if (Object.keys(dataObj).length === 0) return;
+            const div = document.createElement('div');
+            let html = `<h3>${name}</h3><table class="map-table"><tr><th>Key</th><th>${isControl ? "Action / Result" : "Symbol"}</th></tr>`;
+            for (let k in dataObj) {
+                let val = dataObj[k];
+                if (specialChars[val]) val = specialChars[val];
+                let displayVal = val.replace(ZWNJ, '').replace(ZWJ, '');
+                if (isControl) displayVal = val; 
+                if (displayVal === "" && val.includes(ZWJ)) displayVal = "ZWJ (Joiner)";
+                if (displayVal === "" && val.includes(ZWNJ)) displayVal = "ZWNJ (Non-Joiner)";
+                html += `<tr><td style="font-family:monospace; color:#bf360c; font-weight:bold; font-size:14px;">${k}</td><td style="font-family:'Noto Sans Kannada', sans-serif; font-size:16px;">${displayVal}</td></tr>`;
+            }
+            html += `</table>`; div.innerHTML = html; grid.appendChild(div);
+        };
+
+        let controls = {};
+        if (activeMap.name === "Sampurna") {
+            controls = { "=": "Soft Break (k=ha → ಕ್ಹ)", "^": "Force Halant (r^ShA → ರ್‌ಷಾ)", "x": "ZWJ (rxya → ರ‍್ಯ)" };
+        } else {
+            controls = { "~": "Soft Break (rAj~kumAr)", "^": "ZWJ (Joiner)", "~g": "Nga (ಙ)", "~j": "Nya (ಞ)" };
+        }
+        createSection("Control & Special Rules", controls, true);
+        createSection("Vowels", activeMap.vowels);
+        createSection("Matras", activeMap.matras);
+        createSection("Consonants", activeMap.consonants);
+        const combinedSpecials = { ...commonNumbers, ...activeMap.specials };
+        if(!combinedSpecials["|"]) combinedSpecials["|"] = "।";
+        if(!combinedSpecials["||"]) combinedSpecials["||"] = "॥";
+        createSection("Numbers & Punctuation", combinedSpecials);
+        if (mantraToggle.checked) {
+            const mergedMantra = { ...mantraSpecial, ...(activeMap.mantra || {}) };
+            createSection("Vedic / Mantra", mergedMantra);
+        }
+    }
+
+    function saveText() { const b = new Blob([editor.value], {type:'text/plain;charset=utf-8'}); const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download="kannada_text.txt"; a.click(); }
+    function copyText() { editor.select(); document.execCommand('copy'); showToast("Copied!"); }
+    function clearText() { if(confirm('Clear?')){ editor.value=''; state.lastInput=''; } }
+</script>
+</body>
+</html>
