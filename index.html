@@ -129,7 +129,8 @@
                 <option value="baraha">ಬರಹ (Standard)</option>
             </select>
         </div>
-
+        <button class="info" onclick="openMapModal()" title="View Full Mapping of Transliteration Scheme">Map</button>
+        
         <div class="toggle-group" id="autoAnusvaraGroup">
             <label class="toggle-label" title="anka → ಅಂಕ, pampa → ಪಂಪ"><input type="checkbox" id="autoAnusvara" checked> Auto Anusvara <span class="shortcut">Alt+A</span></label>
         </div>
@@ -146,7 +147,6 @@
         </div>
 
         <button class="emoji-btn" onclick="openEmojiModal()" title="Insert Emoji">😀 Emoji</button>
-        <button class="info" onclick="openMapModal()" title="View Full Mapping of Transliteration Scheme">Map</button>
         <div style="flex-grow:1;"></div>
         
         <button onclick="saveText()">Download</button>
