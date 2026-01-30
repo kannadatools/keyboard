@@ -135,7 +135,7 @@
         </div>
 
         <div class="toggle-group">
-            <label class="toggle-label" title="Enable/Disable Mantra shortcuts (_ for ಅನುದಾತ್ತ etc.,)"><input type="checkbox" id="mantraMode"> Mantra <span class="shortcut">Alt+M</span></label>
+            <label class="toggle-label" title="Enable/Disable Mantra shortcuts (\', \", / etc.,)"><input type="checkbox" id="mantraMode"> Mantra <span class="shortcut">Alt+M</span></label>
             <label class="toggle-label" title="Enable/Disable ಕನ್ನಡ ಸಂಖ್ಯೆಗಳು"><input type="checkbox" id="numMode"> Numbers <span class="shortcut">Alt+N</span></label>
             <label class="toggle-label" title="Type in English"><input type="checkbox" id="engMode"> English <span class="shortcut">Alt+E</span></label>
         </div>
@@ -237,10 +237,10 @@
                 "\\\\": "ddanda",
                 "OM": "om" 
             },
-            mantra: { "_": "anudatta", ";": "udatta", ":": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha" },
+            mantra: { "/": "anudatta", "\'": "udatta", "\"": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha" },
             help: [
                 { title: "Control Keys", rows: [["=", "k=ha → ಕ್ಹ"], ["^", "r^ShA → ರ್‌ಷಾ"], ["x", "rxya → ರ‍್ಯ (ರ್ಯ ಬದಲು)"]] },
-                { title: "Mantra / Vedic", rows: [["_", "॒ (ಅನುದಾತ್ತ)"], [";", "॑ (ಸ್ವರಿತ)"], [":", "᳚ (ದೀರ್ಘ ಸ್ವರಿತ)"], ["@", "ಗ್ಂ"], ["#", "ಗ್ಗ್"], ["$", "ಽ (ಅವಗ್ರಹ)"]] },
+                { title: "Mantra", rows: [["/", "॒ (ಅನುದಾತ್ತ)"], ["\'", "॑ (ಸ್ವರಿತ)"], ["\"", "᳚ (ದೀರ್ಘ ಸ್ವರಿತ)"], ["@", "ಗ್ಂ"], ["#", "ಗ್ಗ್"], ["$", "ಽ (ಅವಗ್ರಹ)"]] },
                 { title: "Specials / Punctuation", rows: [["M", "ಂ (ಅನುಸ್ವಾರ)"], ["MM", "ಁ (ಚಂದ್ರಬಿಂದು)"], ["H", "ಃ (ವಿಸರ್ಗ)"], ["OM", "ಓಂ"], ["|", "। (ದಂಡ)"], ["||", "॥ (2 ದಂಡ)"]] },
                 { title: "Special Consonants", rows: [["X", "ಱ (Rra)"], ["XX", "ೞ (Lla)"], ["f", "ಪ಼ (Fa)"], ["z", "ಜ಼ (Za)"]] }
             ],
