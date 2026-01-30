@@ -146,7 +146,7 @@
             <button class="font-btn" onclick="changeFontSize(-2)" title="Decrease Font">A-</button>
         </div>
 
-        <button class="emoji-btn" onclick="openEmojiModal()" title="Insert Emoji">😀 Emoji</button>
+        <button class="emoji-btn" onclick="openEmojiModal()" title="Insert Emoji">Emoji</button>
         <div style="flex-grow:1;"></div>
         
         <button onclick="saveText()">Download</button>
@@ -354,7 +354,7 @@
         const btnB = document.createElement('button');
         btnB.className = "v-btn control";
         btnB.innerHTML = (activeMap.breakKey || "~") + " <small>[Break]</small>";
-        btnB.title = "Stop Merge";
+        btnB.title = "k=ha → ಕ್ಹ";
         btnB.onclick = () => insertChar(activeMap.breakKey || "~");
         vKeypad.appendChild(btnB);
 
@@ -362,7 +362,7 @@
         const btnZ = document.createElement('button');
         btnZ.className = "v-btn control";
         btnZ.innerHTML = activeMap.zwjKey + " <small>[ZWJ]</small>";
-        btnZ.title = "Zero Width Joiner";
+        btnZ.title = "rxya → ರ‍್ಯ";
         btnZ.onclick = () => insertChar(activeMap.zwjKey);
         vKeypad.appendChild(btnZ);
 
@@ -371,7 +371,7 @@
             const btnFH = document.createElement('button');
             btnFH.className = "v-btn control";
             btnFH.innerHTML = activeMap.forceHalantKey + " <small>[Halant]</small>";
-            btnFH.title = "Force Halant (ZWNJ)";
+            btnFH.title = "r^ShA → ರ್‌ಷಾ";
             btnFH.onclick = () => insertChar(activeMap.forceHalantKey);
             vKeypad.appendChild(btnFH);
         }
