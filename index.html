@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>⌨️ Kannada Transliterator (v1.5)</title>
+    <title>⌨️ Kannada Transliterator (v1.6)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -36,10 +36,31 @@
         }
         
         .toolbar { 
-            background: #fff9c4; padding: 15px; border-radius: 12px; margin-bottom: 20px; 
+            background: #fff9c4; padding: 15px; border-radius: 12px; margin-bottom: 15px; 
             display: flex; gap: 20px; align-items: center; flex-wrap: wrap; 
             border: 1px solid var(--accent);
         }
+
+        /* New Memory Bar Styles */
+        .memory-bar {
+            display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+            padding: 0 5px;
+        }
+        .mem-slot {
+            background: #e0f2f1; border: 1px solid #80cbc4; color: #00695c;
+            padding: 6px 12px; border-radius: 20px; cursor: pointer;
+            font-size: 13px; font-weight: 600; transition: all 0.2s;
+            display: flex; align-items: center; gap: 8px;
+            user-select: none;
+        }
+        .mem-slot:hover { background: #b2dfdb; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .mem-slot:active { transform: translateY(0); }
+        .mem-slot.empty { background: #fafafa; border-color: #e0e0e0; color: #9e9e9e; border-style: dashed; }
+        .mem-shortcut { 
+            background: #00695c; color: white; padding: 2px 6px; 
+            border-radius: 6px; font-size: 11px; font-family: 'Consolas', monospace; 
+        }
+        .mem-slot.empty .mem-shortcut { background: #9e9e9e; }
         
         .control-group { display: flex; flex-direction: column; gap: 4px; }
         .label { font-size: 11px; font-weight: bold; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -154,6 +175,8 @@
         <button class="secondary" onclick="clearText()">Clear</button>
     </div>
 
+    <div class="memory-bar" id="memoryBar"></div> 
+
     <div class="virtual-keys" id="vKeypad"></div>
 
     <textarea id="editor" placeholder=""></textarea>
@@ -192,13 +215,17 @@
         'm': ['p','b','m'] 
     };
 
-    const emojis = {
-        "Faces": ["😀","😁","😂","😊","🥰","😎","🤔","😐","😑","😮","😥","😭","😱","😡","🙏","👍","👎","👋"],
-        "Symbols": ["❤️","✨","🔥","⭐","🕉️","🚩","☸️","✝️","☪️","✅","❌","❓","❗"],
-        "Nature": ["🌺","🌻","🌲","🌞","🌙","🌧️","🌊","🔥","🐄","🐘","🐕","🐅"],
-        "Objects": ["💻","📱","📚","🖊️","✉️","🎁","🔔","🛒","🚗","🚲","🏠"]
+	const emojis = {
+      smileys: ["😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😮‍💨", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🫣", "🤭", "🫢", "🫡", "🤫", "🫠", "🤥", "😶", "😶‍🌫️", "😐", "😑", "😬", "🫨", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😵", "😵‍💫", "🫥", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👹", "👺", "🤡", "💩", "👻", "💀", "☠️", "👽", "👾", "🤖", "🎃", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾"],
+      people: ["👋", "🤚", "🖐️", "✋", "🖖", "👌", "🤌", "🤏", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉", "👆", "🖕", "👇", "☝️", "👍", "👎", "✊", "👊", "🤛", "🤜", "👏", "🙌", "👐", "🤲", "🤝", "🙏", "✍️", "💅", "🤳", "💪", "🦾", "🦿", "🦵", "🦶", "👂", "🦻", "👃", "🧠", "🫀", "🫁", "🦷", "🦴", "👀", "👁️", "👅", "👄", "🫦", "💋", "🩸"],
+      nature: ["🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐻‍❄️", "🐨", "🐯", "🦁", "🐮", "🐷", "🐽", "🐸", "🐵", "🐒", "🦍", "🦧", "🐶", "🐕", "🦮", "🐕‍🦺", "🐩", "🐺", "🦊", "🦝", "🐱", "🐈", "🐈‍⬛", "🦁", "🐯", "🐅", "🐆", "🐴", "🐎", "🦄", "🦓", "🦌", "🦬", "🐮", "🐂", "🐃", "🐄", "🐷", "🐖", "🐗", "🐽", "🐏", "🐑", "🐐", "🐪", "🐫", "🦙", "🦒", "🐘", "🦣", "🦏", "🦛", "🐭", "🐁", "🐀", "🐹", "🐰", "🐇", "🐿️", "🦫", "🦔", "🦇", "🐻", "🐨", "🐼", "🦥", "🦦", "🦨", "🦘", "🦡", "🐾", "🦃", " chicken", "🐓", "🐣", "🐤", "🐥", "🐦", "🐧", "🕊️", "🦅", "🦆", "🦢", "🦉", "🦤", "🦩", "🦚", "🦜", "🐸", "🐊", "🐢", "🦎", "🐍", "🐲", "🐉", "🦕", "🦖", "🐳", "🐋", "🐬", "🦭", "🐟", "🐠", "🐡", "🦈", "🐙", "🐚", "🪸", "🐌", "🦋", "🐛", "🐜", "🐝", "🪲", "🐞", "🦗", "🕷️", "🕸️", "🦂", "🦟", "🪰", "🪱", "🦠", "💐", "🌸", "💮", "🪷", "🏵️", "🌹", "🥀", "🌺", "🌻", "🌼", "🌷", "🌱", "🪴", "🌲", "🌳", "🌴", "🌵", "🌾", "🌿", "☘️", "🍀", "🍁", "🍂", "🍃", "🍄", "🌰", "🐚", "🪨"],
+      food: ["🍏", "🍎", "🍐", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🫐", " melon", "🍒", "🍑", "🥭", "🍍", "🥥", "🥝", "🍅", "🍆", "🥑", "🥦", "🥬", "🥒", "🌶️", "🫑", "🌽", "🥕", "🫒", "🧄", "🧅", "🥔", "🍠", "🥐", "🥯", "🍞", "🥖", "🥨", "🧀", "🥚", "🍳", "🧈", "🥞", "🧇", "🥓", "🥩", "🍗", "🍖", "🌭", "🍔", "🍟", "🍕", "🫓", "🥪", "🥙", "🧆", "🌮", "🌯", "🫔", "🥗", "🥘", "🫕", "🥣", "🍝", "🍜", "🍲", "🍛", "🍣", "🍱", "🥟", "🦪", "🍤", "🍙", "🍚", "🍘", "🍥", "🥠", "🍢", "🍡", "🍧", "🍨", "🍦", "🥧", "🧁", "🍰", "🎂", "🍮", "🍭", "🍬", "🍫", "🍿", "🍩", "🍪", "🌰", "🥜", "🍯", "🥛", "☕", "🫖", "🍵", "🍶", "🍾", "🍷", "🍸", "🍹", "🍺", "🍻", "🥂", "🥃", "🥤", "🧋", "🧃", "🧉", "🧊", "🥢", "🍽️", "🍴", "🥄", "🔪", "🫙", "🏺"],
+      travel: ["🌍", "🌎", "🌏", "🌐", "🗺️", "🗾", "🧭", "🏔️", "⛰️", "🌋", "🗻", "🏕️", "🏖️", "🏝️", "🏙️", "🏗️", "🧱", "🏘️", "🏚️", "🏠", "🏡", "🏢", "🏣", "🏤", "🏥", "🏦", "🏨", "🏩", "🏪", "🏫", "🏬", "🏭", "🏯", "🏰", "💒", "🗼", "🗽", "⛪", "🕌", "🛕", "🕍", "⛩️", "🕋", "⛲", "⛺", "🌁", "🌃", "🏙️", "🌄", "🌅", "🌆", "🌇", "🌉", "♨️", "🎠", "🎡", "🎢", "💈", "🎪", "🚂", "🚃", "🚄", "🚅", "🚆", "🚇", "🚈", "🚉", "🚊", "🚝", "🚞", "🚋", "🚌", "🚍", "🚎", "🚐", "🚑", "🚒", "🚓", "🚔", "🚕", "🚖", "🚗", "🚘", "🚙", "🛻", "🚚", "🚛", "🚜", "🏎️", "🛵", "🦽", "🦼", "🛺", "🚲", "🛴", "🛹", "🛼", "⛽", "🛞", "🚨", "🚥", "🚦", "🛑", "🚧", "⚓", "🛟", "⛵", "🛶", "🚤", "🛳️", "⛴️", "🛥️", "🚢", "✈️", "🛩️", "🛫", "🛬", "🪂", "💺", "🚁", "🚟", "🚠", "🚡", "🛰️", "🚀", "🛸", "🪐", "🌠", "🌌", "☁️", "⛅", "⛈️", "🌤️", "🌥️", "🌦️", "🌧️", "🌨️", "🌩️", "🌪️", "🌫️", "🌬️", "🌀", "🌈", "🌂", "☂️", "☔", "⛱️", "⚡", "❄️", "☃️", "⛄", "☄️", "🔥", "💧", "🌊"],
+      activities: ["🎃", "🎄", "🎆", "🎇", "🧨", "✨", "🎈", "🎉", "🎊", "🎋", "🎍", "🎎", "🎏", "🎐", "🎑", "🧧", "🎀", "🎁", "🎗️", "🎟️", "🎫", "🎖️", "🏆", "🏅", "🥇", "🥈", "🥉", "⚽", "⚾", "🥎", "🏀", "🏐", "🏈", "🏉", "🎾", "🎾", "🏸", "🏏", "🏑", "🏒", "🥍", "🏓", "🏹", "🎣", "🤿", "🥊", "🥋", "⛸️", "🎿", "🛷", "🥌", "🎯", "🪀", "🪁", "🎱", "🔮", "🪄", "🎮", "🕹️", "🎰", "🎲", "🧩", "🧸", "🪅", "🪩", "🖼️", "🎨", "🧵", "🪡", "🧶", "🪢"],
+      objects: ["👓", "🕶️", "🥽", "🥼", "🦺", "👔", "👕", "👖", "🧣", "🧤", "🧥", "🧦", "👗", "👘", "🥻", "🩱", "🩲", "🩳", "👙", "👚", "👛", "👜", "👝", "🛍️", "🎒", "🩴", "👞", "👟", "🥾", "🥿", "👠", "👡", "👢", "👑", "👒", "🎩", "🎓", "🧢", "⛑️", "📿", "💄", "💍", "💎", "📢", "📣", "📯", "🎙️", "🎚️", "🎛️", "🎤", "🎧", "📻", "🎷", "🪗", "🎸", "🎹", "🎺", "🎻", "🪕", "🥁", "🪘", "📱", "📲", "☎️", "📞", "📟", "📠", "🔋", "🪫", "🔌", "💻", "🖥️", "🖨️", "⌨️", "🖱️", "🖲️", "💽", "💾", "💿", "📀", "🧮", "🎥", "🎞️", "📽️", "🎬", "📺", "📷", "📸", "📹", "📼", "🔍", "🔎", "🕯️", "💡", " flashlight", "🏮", "🪔", "📔", "📕", "📖", "📗", "📘", "📙", "📚", "📓", "📒", "📃", "📜", "📄", "📰", "🗞️", "📑", "🔖", "🏷️", "💰", "🪙", "💴", "💵", "💶", "💷", "💸", "💳", "🧾", "✉️", "💌", "📧", "🧧", "📨", "📩", "📤", "📥", "📦", "📫", "📪", "📬", "📭", "📮", "🗳️", "✏️", "✒️", "🖋️", "🖊️", "🖌️", "🖍️", "📝", "💼", "📁", "📂", "🗂️", "📅", "📆", "🗒️", "🗓️", "📇", "📈", "📉", "📊", "📋", "📌", "📍", "📎", "🖇️", "📏", "📐", "✂️", "🗃️", "🗄️", "🗑️", "🔒", "🔓", "🔏", "🔐", "🔑", "🗝️", "🔨", "🪓", "⛏️", "⚒️", "🛠️", "🗡️", "⚔️", "💣", "🪃", "🏹", "🛡️", "🪚", "🔧", "🔩", "⚙️", "🗜️", "⚖️", "🦯", "🔗", "⛓️", "🪝", "🧰", "🧲", "🪜", "⚗️", "🧪", "🧫", "🧬", "🔬", "🔭", "📡", "💉", "🩸", "💊", "🩹", "🩺", "🪟", "🚪", "🛗", "🪞", "🪟", "🛏️", "🛋️", "🪑", "🚽", "🪠", "🚿", "🛁", "🪤", "🪒", "🧴", "🧷", "🧹", "🧺", "🧻", "🧼", "🧽", "🧯", "🛒", "🚬", "⚰️", "🪦", "⚱️", "🏺", "🔮", "📿", "🧿", "💈", "⚗️", "🔭", "🔬", "🕳️", "🩹", "🩺"],
+      symbols: ["💘", "💝", "💖", "💗", "💓", "💞", "💕", "💟", "❣️", "💔", "❤️‍🔥", "❤️‍🩹", "❤️", "🧡", "💛", "💚", "💙", "💜", "🤎", "🖤", "🤍", "💯", "♨️", "💢", "💬", "👁️‍🗨️", "🗨️", "🗯️", "💭", "💤", "🌐", "♠️", "♥️", "♦️", "♣️", "🃏", "🀄", "🎴", "🎭", "🔇", "🔈", "🔉", "🔊", "🔔", "🔕", "🎼", "🎵", "🎶", "💹", "🏧", "🚮", "🚰", "♿", "🚹", "🚺", "🚻", "🚼", "🚾", "🛂", "🛃", "🛄", "🛅", "⚠️", "🚸", "⛔", "🚫", "🚳", "🚭", "🚯", "🚱", "🚷", "📵", "🔞", "☢️", "☣️", "⬆️", "↗️", "➡️", "↘️", "⬇️", "↙️", "⬅️", "↖️", "↕️", "↔️", "↩️", "↪️", "⤴️", "⤵️", "🔃", "🔄", "🔙", "🔚", "🔛", "🔜", "🔝", "🛐", "⚛️", "🕉️", "✡️", "☸️", "☯️", "✝️", "☦️", "☪️", "☮️", "🕎", "🔯", "♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓", "⛎", "🔀", "🔁", "🔂", "▶️", "⏩", "⏭️", "⏯️", "◀️", "⏪", "⏮️", "🔼", "⏫", "🔽", "⏬", "⏸️", "⏹️", "⏺️", "⏏️", "🎦", "🔅", "🔆", "📶", "📳", "📴", "♀️", "♂️", "⚧", "✖️", "➕", "➖", "➗", "♾️", "‼️", "⁉️", "❓", "❔", "❕", "❗️", "〰️", "💱", "💲", "⚕️", "♻️", "⚜️", "🔱", "📛", "🔰", "⭕", "✅", "☑️", "✔️", "❌", "❎", "➰", "➿", "〽️", "✳️", "✴️", "❇️", "©️", "®️", "™️", "#️⃣", "*️⃣", "0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟", "🔠", "🔡", "🔢", "🔣", "🔤", "🅰️", "🆎", "🅱️", "🆑", "🆒", "🆓", "ℹ️", "🆔", "Ⓜ️", "🆕", "🆖", "🅾️", "🆗", "🅿️", "🆘", "🆙", "🆚", "🈁", "🈂️", "🈷️", "🈶", "🈯", "🉐", "🈹", "🈚", "🈲", "🉑", "🈸", "🈴", "🈳", "㊗️", "㊙️", "🈺", "🈵", "🔴", "🟠", "🟡", "🟢", "🔵", "🟣", "🟤", "⚫", "⚪", "🟥", "🟧", "🟨", "🟩", "🟦", "🟪", "🟫", "⬛", "⬜", "◼️", "◻️", "◾", "◽", "▪️", "▫️", "🔶", "🔷", "🔸", "🔹", "🔺", "🔻", "💠", "🔘", "🔳", "🔲"]
     };
-
+    
     // --- 2. SCHEMES ---
     const schemes = {
         sampurna: {
@@ -303,6 +330,7 @@
     let state = { lastInput: "", lastOutput: "", lastType: "" };
     let currentFontSize = 28;
     let isBreakKeyPrefix = false; 
+    let phraseMemory = ["", "", "", "", ""]; // 5 Slots for saved phrases
 
     const editor = document.getElementById('editor');
     const autoAnusvaraToggle = document.getElementById('autoAnusvara');
@@ -319,17 +347,16 @@
         const selected = schemeSelect.value;
         activeMap = schemes[selected];
         
-        // HIDE AUTO ANUSVARA IF NOT SAMPURNA
         const aaGroup = document.getElementById('autoAnusvaraGroup');
         if (aaGroup) aaGroup.style.display = (activeMap.name === "Sampurna") ? "flex" : "none";
 
-        // AUTO-DETECT: Does the break key start any consonant/special sequence?
         const bk = activeMap.breakKey;
         isBreakKeyPrefix = Object.keys(activeMap.consonants).some(k => k.startsWith(bk)) || 
                            Object.keys(activeMap.specials).some(k => k.startsWith(bk));
 
         updateHelpGrid();
         updateVirtualKeys();
+        renderMemoryBar();
         editor.focus();
     }
 
@@ -345,6 +372,56 @@
         if(currentFontSize > 60) currentFontSize = 60;
         editor.style.fontSize = currentFontSize + "px";
         editor.focus();
+    }
+
+    // --- MEMORY BAR FUNCTIONS ---
+    function renderMemoryBar() {
+        const bar = document.getElementById('memoryBar');
+        bar.innerHTML = "";
+        phraseMemory.forEach((text, idx) => {
+            const num = idx + 1;
+            const btn = document.createElement('div');
+            btn.className = text ? "mem-slot" : "mem-slot empty";
+            
+            // Tooltip
+            if(text) btn.title = `Saved: "${text}"\nClick or press Alt+${num} to insert.`;
+            else btn.title = `Empty Slot ${num}\nSelect text and press Ctrl+Alt+${num} to save.`;
+            
+            // Display Text (Truncated)
+            let displayTxt = text ? (text.length > 15 ? text.substring(0,12)+"..." : text) : "Empty";
+            
+            btn.innerHTML = `<span class="mem-shortcut">Alt+${num}</span> <span>${displayTxt}</span>`;
+            
+            // Click Handler
+            btn.onclick = () => {
+                if(text) insertPhrase(idx);
+                else showToast(`Select text & Press Ctrl+Alt+${num} to save`);
+            };
+            bar.appendChild(btn);
+        });
+    }
+
+    function savePhrase(idx) {
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        if (start === end) {
+            showToast("No text selected to save!");
+            return;
+        }
+        const text = editor.value.substring(start, end);
+        phraseMemory[idx] = text;
+        renderMemoryBar();
+        showToast(`Phrase saved to Slot ${idx+1}`);
+    }
+
+    function insertPhrase(idx) {
+        const text = phraseMemory[idx];
+        if (!text) {
+            showToast(`Slot ${idx+1} is empty! Use Ctrl+Alt+${idx+1} to save.`);
+            return;
+        }
+        insertDirect(text); 
+        showToast(`Inserted phrase from Slot ${idx+1}`);
     }
 
     function updateVirtualKeys() {
@@ -440,6 +517,24 @@
     }
 
     editor.addEventListener('keydown', (e) => {
+        // --- KEYBOARD SHORTCUTS FOR MEMORY ---
+        if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+            // Recall: Alt + 1-5
+            if (e.key >= '1' && e.key <= '5') {
+                e.preventDefault();
+                insertPhrase(parseInt(e.key) - 1);
+                return;
+            }
+        }
+        if (e.altKey && e.ctrlKey) {
+            // Save: Ctrl + Alt + 1-5
+            if (e.key >= '1' && e.key <= '5') {
+                e.preventDefault();
+                savePhrase(parseInt(e.key) - 1);
+                return;
+            }
+        }
+
         if (e.altKey) {
             let changed = false; let msg = "";
             if (e.key.toLowerCase() === 'e') { engToggle.checked = !engToggle.checked; msg = engToggle.checked ? "Eng ON" : "Eng OFF"; changed = true; }
