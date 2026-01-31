@@ -147,12 +147,12 @@
             <span class="label">Input Scheme</span>
             <select id="schemeSelect" onchange="changeScheme()">
                 <option value="sampurna">ಸಂಪೂರ್ಣ (Native)</option>
-                <option value="baraha">ಬರಹ (Standard)</option>
+                <option value="baraha">ಬರಹ</option>
             </select>
         </div>
         
         <div class="toggle-group" id="autoAnusvaraGroup">
-            <label class="toggle-label" title="anka → ಅಂಕ, pampa → ಪಂಪ"><input type="checkbox" id="autoAnusvara" checked> Auto Anusvara <span class="shortcut">Alt+A</span></label>
+            <label class="toggle-label" title="anka → ಅಂಕ, pampa → ಪಂಪ"><input type="checkbox" id="autoAnusvara" checked> Auto ಅನುಸ್ವಾರ <span class="shortcut">Alt+A</span></label>
         </div>
 
         <div class="toggle-group">
@@ -252,10 +252,10 @@
                 "T": "ಟ್", "Th": "ಠ್", "D": "ಡ್", "Dh": "ಢ್", "N": "ಣ್", 
                 "t": "ತ್", "th": "ಥ್", "d": "ದ್", "dh": "ಧ್", "n": "ನ್", 
                 "p": "ಪ್", "ph": "ಫ್", "b": "ಬ್", "bh": "ಭ್", "m": "ಮ್", 
-                "y": "ಯ್", "r": "ರ್", "l": "ಲ್", "L": "ಳ್", "v": "ವ್", 
+                "y": "ಯ್", "r": "ರ್", "l": "ಲ್", "L": "ಳ್", "v": "ವ್", "w" : "ವ್", 
                 "sh": "ಶ್", "s": "ಸ್", "h": "ಹ್", "Sh": "ಷ್", "S": "ಷ್", 
-                "X": "ಱ್", "XX": "ೞ್", 
-                "z": "ಜ"+NUKTA+VIRAMA, "Z": "ಝ"+NUKTA+VIRAMA, "f": "ಪ"+NUKTA+VIRAMA, "F": "ಫ"+NUKTA+VIRAMA 
+                "R": "ಱ್", "Rh": "ೞ್", "z" : NUKTA, 
+                "Z": "ಜ"+NUKTA+VIRAMA, "Zh": "ಝ"+NUKTA+VIRAMA, "f": "ಪ"+NUKTA+VIRAMA, "F": "ಫ"+NUKTA+VIRAMA 
             },
             specials: { 
                 "|": "danda", 
@@ -267,11 +267,11 @@
             mantra: { "/": "anudatta", "\'": "udatta", "\"": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha" },
             help: [
                 { title: "Control Keys", rows: [["=", "k=ha → ಕ್ಹ"], ["^", "r^ShA → ರ್‌ಷಾ"], ["x", "rxya → ರ‍್ಯ (ರ್ಯ ಬದಲು)"], ["x", "Axypal → ಆ್ಯಪಲ್"]] },
-                { title: "Mantra", rows: [["/", "॒ (ಅನುದಾತ್ತ)"], ["\'", "॑ (ಸ್ವರಿತ)"], ["\"", "᳚ (ದೀರ್ಘ ಸ್ವರಿತ)"], ["@", "ಗ್ಂ"], ["#", "ಗ್ಗ್"], ["$", "ಽ (ಅವಗ್ರಹ)"]] },
+                { title: "Mantra", rows: [["/", "॒ (ಅನುದಾತ್ತ)"], ["\'", "॑ (ಸ್ವರಿತ)"], ["\"", "᳚ (ದೀರ್ಘ ಸ್ವರಿತ)"], ["@", "ಗ್ಂ"+ZWNJ], ["#", "ಗ್ಗ್"+ZWNJ], ["$", "ಽ (ಅವಗ್ರಹ)"]] },
                 { title: "Specials / Punctuation", rows: [["M", "ಂ (ಅನುಸ್ವಾರ)"], ["MM", "ಁ (ಚಂದ್ರಬಿಂದು)"], ["H", "ಃ (ವಿಸರ್ಗ)"], ["OM", "ಓಂ"], ["|", "। (ದಂಡ)"], ["||", "॥ (2 ದಂಡ)"]] },
-                { title: "Special Consonants", rows: [["X", "ಱ (Rra)"], ["XX", "ೞ (Lla)"], ["f", "ಪ಼ (Fa)"], ["z", "ಜ಼ (Za)"]] }
+                { title: "Special Consonants", rows: [["R", "ಱ (Rra)"], ["Rh", "ೞ (Lla)"], ["f", "ಫ಼ (Fa)"], ["Z", "ಜ಼ (Za)"], ["Zh", "ಜ಼ (Za)"], ["z" : "಼ (NUKTA)"]] }
             ],
-            buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "ಗ್ಂ", "ಗ್ಗ್", "ꣳ", "॒", "॑", "᳚", "।", "॥", "ಽ"]
+            buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "।", "॥", "ಗ್ಂ"+ZWNJ, "ಗ್ಗ್"+ZWNJ, "ꣳ", "॒", "॑", "᳚", "ಽ" ]
         },
         baraha: {
             name: "Baraha",
