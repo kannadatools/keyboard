@@ -554,10 +554,18 @@
         if (e.key === 'Backspace') state.lastInput = "";
     });
 
-    editor.addEventListener('input', (e) => {
+editor.addEventListener('input', (e) => {
+        // 1. IGNORE PASTES: Just let the text be inserted as-is.
+        if (e.inputType === 'insertFromPaste') {
+            state.lastInput = ""; // Reset state so next type doesn't merge with pasted text
+            return; 
+        }
+
+        // 2. Existing logic for English mode and Deletes
         if (engToggle.checked) { state.lastInput = ""; return; }
-        if (e.inputType === 'deleteContentBackward') return;
+        if (e.inputType === 'deleteContentBackward') { state.lastInput = ""; return; }
         
+        // 3. Normal typing logic
         const start = editor.selectionStart;
         const current = editor.value;
         const charTyped = current.substring(start - 1, start);
@@ -566,7 +574,7 @@
         processInput(charTyped, start);
     });
 
-    function processInput(charTyped, cursorPos) {
+	function processInput(charTyped, cursorPos) {
         // --- STEP 1: LAZY BREAK RESOLUTION ---
         if (isBreakKeyPrefix && state.lastInput === activeMap.breakKey) {
             const combo = state.lastInput + charTyped;
