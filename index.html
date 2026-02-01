@@ -264,8 +264,8 @@
     const NUKTA = '\u0CBC';
 
     const autoAnusvaraTriggers = {
-        'n': ['k','g','c','j','T','D','t','d'],
-        'm': ['p','b','m']
+        'n': ['k','g','c','j','T','D','t','d'], 
+        'm': ['p','b','m'] 
     };
 
     const kbdDefinition = [
@@ -290,13 +290,13 @@
         sampurna: {
             name: "Sampurna",
             isVisual: false,
-            breakKey: '=',        // Soft Break (Ligature allowed)
-            forceHalantKey: '^',  // Hard Break (ZWNJ - Visible Halant)
-            zwjKey: 'x',
-            vowels: {
-                "a": "ಅ", "aa": "ಆ", "A": "ಆ", "i": "ಇ", "ee": "ಈ", "I": "ಈ", "ii": "ಈ",
-                "u": "ಉ", "oo": "ಊ", "U": "ಊ", "uu": "ಊ", "e": "ಎ", "E": "ಏ", "ai": "ಐ",
-                "o": "ಒ", "O": "ಓ", "au": "ಔ", "ou": "ಔ", "R": "ಋ", "RR": "ೠ", "RU": "ೠ",
+            breakKey: '=',        
+            forceHalantKey: '^',  
+            zwjKey: 'x',   
+            vowels: { 
+                "a": "ಅ", "aa": "ಆ", "A": "ಆ", "i": "ಇ", "ee": "ಈ", "I": "ಈ", "ii": "ಈ", 
+                "u": "ಉ", "oo": "ಊ", "U": "ಊ", "uu": "ಊ", "e": "ಎ", "E": "ಏ", "ai": "ಐ", 
+                "o": "ಒ", "O": "ಓ", "au": "ಔ", "ou": "ಔ", "R": "ಋ", "RR": "ೠ", "RU": "ೠ", 
                 "q": "ಌ", "Q": "ೡ",
                 "M": "ಂ", "MM": "ಁ", "H": "ಃ"
             },
@@ -318,15 +318,15 @@
                 "Z": "ಜ"+NUKTA+VIRAMA, "Zh": "ಝ"+NUKTA+VIRAMA, "f": "ಫ"+NUKTA+VIRAMA,
                 "z": NUKTA
             },
-            specials: {
-                "|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda", "OM": "om"
+            specials: { 
+                "|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda", "OM": "om" 
             },
-            mantra: {
+            mantra: { 
                 "/": "anudatta", "\'": "udatta", "\"": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha",
                 "C" : "೧॒॑", "V" : "೨॒॑", "B" : "೩॒॑"
             },
             help: [
-                { title: "Control Keys", rows: [["=", "Soft Break (k=h -> ಕ್ಹ)"], ["^", "Force Halant (k^h -> ಕ್‌ಹ)"], ["x", "ZWJ (rxya → ರ‍್ಯ)"], ["x", "ZWJ (Axypal → ಆ್ಯಪಲ್)"]] },
+                { title: "Control Keys", rows: [["=", "Soft Break (k=h -> ಕ್ಹ)"], ["^", "Force Halant (k^h -> ಕ್‌ಹ)"], ["x", "ZWJ (rxya → ರ‍್ಯ)"]] },
                 { title: "Mantra", rows: [["/", "॒ (ಅನುದಾತ್ತ)"], ["\'", "॑ (ಸ್ವರಿತ)"], ["\"", "᳚ (ದೀರ್ಘ ಸ್ವರಿತ)"],  ["@", "ಗ್ಂ"+ZWNJ], ["#", "ಗ್ಗ್"+ZWNJ], ["$", "ಽ (ಅವಗ್ರಹ)"]] },
                 { title: "Specials / Punctuation", rows: [["M", "ಂ (ಅನುಸ್ವಾರ)"], ["MM", "ಁ (ಚಂದ್ರಬಿಂದು)"], ["H", "ಃ (ವಿಸರ್ಗ)"], ["OM", "ಓಂ"], ["|", "। (ದಂಡ)"], ["||", "॥ (2 ದಂಡ)"]] },
                 { title: "Special Consonants", rows: [["Rh", "ಱ (Rra)"], ["RH", "ೞ (Lla)"], ["z", " ಼ (NUKTA)"], ["f", "ಫ಼ (Fa)"], ["Z", "ಜ಼ (Za)"], ["Zh", "ಝ಼ (Za)"]] }
@@ -336,33 +336,33 @@
         baraha: {
             name: "Baraha",
             isVisual: false,
-            breakKey: '~',  // ZWNJ / Halant Non-Joiner (Prefix based)
+            breakKey: '~', 
             zwjKey: '^',
-            vowels: {
-                "a": "ಅ", "aa": "ಆ", "A": "ಆ", "i": "ಇ", "ee": "ಈ", "I": "ಈ", "u": "ಉ", "oo": "ಊ", "U": "ಊ",
-                "Ru": "ಋ", "RU": "ೠ", "~lu": "ಌ", "~lU": "ೡ",
-                "e": "ಎ", "E": "ಏ", "ai": "ಐ", "o": "ಒ", "O": "ಓ", "au": "ಔ", "ou": "ಔ",
-                "M": "ಂ", "~M": "ಁ", "H": "ಃ"
+            vowels: { 
+                "a": "ಅ", "aa": "ಆ", "A": "ಆ", "i": "ಇ", "ee": "ಈ", "I": "ಈ", "u": "ಉ", "oo": "ಊ", "U": "ಊ", 
+                "Ru": "ಋ", "RU": "ೠ", "~lu": "ಌ", "~lU": "ೡ", 
+                "e": "ಎ", "E": "ಏ", "ai": "ಐ", "o": "ಒ", "O": "ಓ", "au": "ಔ", "ou": "ಔ", 
+                "M": "ಂ", "~M": "ಁ", "H": "ಃ" 
             },
-            matras: {
-                "a": "", "aa": "ಾ", "A": "ಾ", "i": "ಿ", "ee": "ೀ", "I": "ೀ", "u": "ು", "oo": "ೂ", "U": "ೂ",
-                "Ru": "ೃ", "RU": "ೄ", "~lu": "ೢ", "~lU": "ೣ",
-                "e": "ೆ", "E": "ೇ", "ai": "ೈ", "o": "ೊ", "O": "ೋ", "au": "ೌ", "ou": "ೌ"
+            matras: { 
+                "a": "", "aa": "ಾ", "A": "ಾ", "i": "ಿ", "ee": "ೀ", "I": "ೀ", "u": "ು", "oo": "ೂ", "U": "ೂ", 
+                "Ru": "ೃ", "RU": "ೄ", "~lu": "ೢ", "~lU": "ೣ", 
+                "e": "ೆ", "E": "ೇ", "ai": "ೈ", "o": "ೊ", "O": "ೋ", "au": "ೌ", "ou": "ೌ" 
             },
             consonants: {
                 "k": "ಕ್", "K": "ಖ್", "kh": "ಖ್", "g": "ಗ್", "G": "ಘ್", "gh": "ಘ್", "~g": "ಙ್", "ng": "ಙ್",
                 "c": "ಚ್", "ch": "ಚ್", "C": "ಛ್", "Ch": "ಛ್", "j": "ಜ್", "J": "ಝ್", "jh": "ಝ್", "~j": "ಞ್", "ny": "ಞ್",
-                "T": "ಟ್", "Th": "ಠ್", "D": "ಡ್", "Dh": "ಢ್", "N": "ಣ್",
-                "t": "ತ್", "th": "ಥ್", "d": "ದ್", "dh": "ಧ್", "n": "ನ್",
-                "p": "ಪ್", "P": "ಫ್", "ph": "ಫ್", "b": "ಬ್", "B": "ಭ್", "bh": "ಭ್", "m": "ಮ್",
-                "y": "ಯ್", "r": "ರ್", "l": "ಲ್", "L": "ಳ್", "v": "ವ್", "w": "ವ್",
-                "sh": "ಶ್", "S": "ಶ್", "Sh": "ಷ್", "s": "ಸ್", "h": "ಹ್",
+                "T": "ಟ್", "Th": "ಠ್", "D": "ಡ್", "Dh": "ಢ್", "N": "ಣ್", 
+                "t": "ತ್", "th": "ಥ್", "d": "ದ್", "dh": "ಧ್", "n": "ನ್", 
+                "p": "ಪ್", "P": "ಫ್", "ph": "ಫ್", "b": "ಬ್", "B": "ಭ್", "bh": "ಭ್", "m": "ಮ್", 
+                "y": "ಯ್", "r": "ರ್", "l": "ಲ್", "L": "ಳ್", "v": "ವ್", "w": "ವ್", 
+                "sh": "ಶ್", "S": "ಶ್", "Sh": "ಷ್", "s": "ಸ್", "h": "ಹ್", 
                 "rx": "ಱ್", "~r": "ಱ್", "Lx": "ೞ್", "~l": "ೞ್",
-                "f": "ಫ"+NUKTA+VIRAMA, "z": "ಜ"+NUKTA+VIRAMA
+                "f": "ಫ"+NUKTA+VIRAMA, "z": "ಜ"+NUKTA+VIRAMA 
             },
-            specials: {
+            specials: { 
                 "|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda",
-                "&": "avagraha", "Rs": "rupee", "OM": "om", "~M": "chandrabindu", "~lu": "ಌ"
+                "&": "avagraha", "Rs": "rupee", "OM": "om", "~M": "chandrabindu", "~lu": "ಌ" 
             },
             mantra: { },
             help: [
@@ -377,28 +377,29 @@
             isVisual: true,
             vowels: { "a":"ಅ","A":"ಆ","i":"ಇ","I":"ಈ","u":"ಉ","U":"ಊ","R":"ಋ","e":"ಎ","E":"ಏ","Y":"ಐ","o":"ಒ","O":"ಓ","V":"ಔ","M":"ಂ","H":"ಃ" },
             matras: { "a":"","A":"ಾ","i":"ಿ","I":"ೀ","u":"ು","U":"ೂ","R":"ೃ","e":"ೆ","E":"ೇ","Y":"ೈ","o":"ೊ","O":"ೋ","V":"ೌ","M":"ಂ","H":"ಃ" },
-            consonants: { "k":"ಕ","K":"ಖ","g":"ಗ","G":"ಘ","z":"ಙ","c":"ಚ","C":"ಛ","j":"ಜ","J":"ಝ","Z":"ಞ","q":"ಟ","Q":"ಠ","w":"ಡ","W":"ಢ","N":"ಣ","t":"ತ","T":"ಥ","d":"ದ","D":"ಧ","n":"ನ","p":"ಪ","P":"ಫ","b":"ಬ","B":"ಭ","m":"ಮ","y":"ಯ","r":"ರ","l":"ಲ","v":"ವ","S":"ಶ","x":"ಷ","s":"ಸ","h":"ಹ","L":"ಳ","f":VIRAMA },
+            consonants: { "k":"ಕ","K":"ಖ","g":"ಗ","G":"ಘ","z":"ಞ","c":"ಚ","C":"ಛ","j":"ಜ","J":"ಝ","Z":"ಙ","q":"ಟ","Q":"ಠ","w":"ಡ","W":"ಢ","N":"ಣ","t":"ತ","T":"ಥ","d":"ದ","D":"ಧ","n":"ನ","p":"ಪ","P":"ಫ","b":"ಬ","B":"ಭ","m":"ಮ","y":"ಯ","r":"ರ","l":"ಲ","v":"ವ","S":"ಶ","x":"ಷ","s":"ಸ","h":"ಹ","L":"ಳ","f":VIRAMA },
             specials: { "|": "danda", "||": "ddanda" },
             mantra: { "/": "anudatta", "\'": "udatta", "\"": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha" },
             help: [
                 { title: "Visual Mode", rows: [["f", "Virama/Vottu"], ["F", "Arkavattu/R-Vottu"]] },
-                { title: "Consonants", rows: [["k", "ಕ"], ["K", "ಖ"], ["g", "ಗ"], ["G", "ಘ"], ["z", "ಙ"]] }
+                { title: "Nukta / Ligatures", rows: [["X", "Nukta / rX=ಱ, RX=ೠ, LX=ೞ"]] },
+                { title: "Consonants", rows: [["z", "ಞ (Nya)"], ["Z", "ಙ (Nga)"]] }
             ],
             buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "।", "॥", "ಗ್ಂ"+ZWNJ, "ಗ್ಗ್"+ZWNJ, "॒", "॑", "᳚", "ಽ"]
         }
     };
 
-    const commonSpecial = { "|": "।", "||": "॥" };
+    const commonSpecial = { "|": "।", "||": "॥" }; 
     const mantraSpecial = { "@": "ಗ್ಂ" + ZWNJ, "#": "ಗ್ಗ್" + ZWNJ, "/": "\u0952", "\'": "\u0951", "\"": "\u1CDA" };
     const commonNumbers = { "0": "೦", "1": "೧", "2": "೨", "3": "೩", "4": "೪", "5": "೫", "6": "೬", "7": "೭", "8": "೮", "9": "೯" };
     const specialChars = { "avagraha": "ಽ", "danda": "।", "ddanda": "॥", "om": "ಓಂ", "rupee": "₹", "anudatta": "\u0952", "udatta": "\u0951", "d_svarita": "\u1CDA", "chandrabindu": "ಁ" };
-
-    let activeMap = schemes.sampurna;
+    
+    let activeMap = schemes.sampurna; 
     let state = { lastInput: "", lastOutput: "", lastType: "" };
     let currentFontSize = 28;
-    let isBreakKeyPrefix = false;
-    let phraseMemory = ["", "", "", "", ""];
-    let isShifted = false;
+    let isBreakKeyPrefix = false; 
+    let phraseMemory = ["", "", "", "", ""]; 
+    let isShifted = false; 
 
     const editor = document.getElementById('editor');
     const autoAnusvaraToggle = document.getElementById('autoAnusvara');
@@ -415,7 +416,7 @@
     function initUI() {
         const selected = schemeSelect.value;
         activeMap = schemes[selected];
-
+        
         if (activeMap.name.includes("Nudi")) {
             nudiControls.style.display = "flex";
             document.getElementById('autoAnusvaraGroup').style.display = "none";
@@ -429,7 +430,7 @@
         }
 
         const bk = activeMap.breakKey;
-        isBreakKeyPrefix = bk ? (Object.keys(activeMap.consonants).some(k => k.startsWith(bk)) ||
+        isBreakKeyPrefix = bk ? (Object.keys(activeMap.consonants).some(k => k.startsWith(bk)) || 
                                  (activeMap.specials && Object.keys(activeMap.specials).some(k => k.startsWith(bk)))) : false;
 
         updateHelpGrid();
@@ -473,7 +474,7 @@
                 let glyph = char;
                 if(activeMap.consonants && activeMap.consonants[char]) glyph = activeMap.consonants[char];
                 else if(activeMap.vowels && activeMap.vowels[char]) glyph = activeMap.vowels[char];
-                if(char === 'f') glyph = '್';
+                if(char === 'f') glyph = '್'; 
                 const btn = document.createElement('div');
                 btn.className = "key-cap";
                 btn.innerHTML = `<span class="glyph">${glyph}</span><span class="key-label">${char}</span>`;
@@ -521,7 +522,7 @@
 
     function insertPhrase(idx) {
         if (!phraseMemory[idx]) { showToast(`Slot ${idx+1} is empty!`); return; }
-        insertDirect(phraseMemory[idx]);
+        insertDirect(phraseMemory[idx]); 
         showToast(`Inserted phrase from Slot ${idx+1}`);
     }
 
@@ -530,10 +531,11 @@
         if (!activeMap.isVisual) {
             const btnB = document.createElement('button');
             btnB.className = "v-btn control";
-
+            
             // Customize Label based on scheme
             let label = activeMap.name === "Sampurna" ? "=" : "~";
             let labelDesc = activeMap.name === "Sampurna" ? "Break" : "Halant Break";
+            
             btnB.innerHTML = label + ` <small>[${labelDesc}]</small>`;
             btnB.onclick = () => insertChar(label);
             vKeypad.appendChild(btnB);
@@ -583,7 +585,7 @@
 
     // --- ENGINE ---
     function insertChar(char) {
-        if (char === activeMap.breakKey && !isBreakKeyPrefix) { handleBreak(); return; }
+        if (char === activeMap.breakKey && !isBreakKeyPrefix) { handleBreak(); return; } 
         const start = editor.selectionStart;
         const current = editor.value;
         editor.value = current.slice(0, start) + char + current.slice(start);
@@ -599,7 +601,7 @@
         editor.value = current.slice(0, start) + char + current.slice(start);
         editor.focus();
         editor.setSelectionRange(start + char.length, start + char.length);
-        state.lastInput = "";
+        state.lastInput = ""; 
     }
 
     function handleBreak() {
@@ -648,9 +650,33 @@
         if (char === 'f' && state.lastInput === 'f') { applyToEditor(cursorPos, 1, ZWNJ, 'special', 'ff'); return; }
         if (char === 'F' && state.lastType === 'consonant') { output = (state.lastInput === 'r') ? ZWJ + VIRAMA : VIRAMA + "ರ"; applyToEditor(cursorPos, 1, output, 'consonant', 'F'); return; }
 
-        if (activeMap.consonants[char]) { output = activeMap.consonants[char]; type = 'consonant'; processed = true; }
+		// SPECIAL NUDI X HANDLING (Nukta / Ligatures)
+        if (activeMap.name.includes("Nudi") && char === 'X') {
+             // 1. r + X -> ಱ (Rra)
+             if(state.lastInput === 'r') { applyToEditor(cursorPos, 2, "ಱ", 'consonant', 'X'); return; }
+             
+             // 2. R + X -> ೠ (Vowel) OR ೄ (Matra)
+             if(state.lastInput === 'R') { 
+                 // If previous R was processed as a Matra (e.g. k+R=ಕೃ), change to ೄ (ಕೄ)
+                 if (state.lastType === 'matra') {
+                     applyToEditor(cursorPos, 2, "ೄ", 'matra', 'X'); 
+                 } else {
+                     // Otherwise (standalone R=ಋ), change to ೠ
+                     applyToEditor(cursorPos, 2, "ೠ", 'vowel', 'X'); 
+                 }
+                 return; 
+             }
+             
+             // 3. L + X -> ೞ (Lla)
+             if(state.lastInput === 'L') { applyToEditor(cursorPos, 2, "ೞ", 'consonant', 'X'); return; }
+             
+             // 4. Default -> Nukta (Remove 1 char 'X', insert Nukta)
+             applyToEditor(cursorPos, 1, NUKTA, 'special', 'X'); return;
+        }
+
+        if (activeMap.consonants[char]) { output = activeMap.consonants[char]; type = 'consonant'; processed = true; } 
         else if (activeMap.vowels[char]) {
-            if (state.lastType === 'consonant') { output = activeMap.matras[char] || ""; type = 'matra'; }
+            if (state.lastType === 'consonant') { output = activeMap.matras[char] || ""; type = 'matra'; } 
             else { output = activeMap.vowels[char]; type = 'vowel'; }
             processed = true;
         }
@@ -661,31 +687,15 @@
 
     function processPhoneticInput(charTyped, cursorPos) {
         // 1. PREFIX BREAK LOGIC (Baraha ~)
-        // Checks if previous char was a break key that fell through (like ~ in Baraha)
         if (isBreakKeyPrefix && state.lastInput === activeMap.breakKey) {
             const combo = state.lastInput + charTyped;
             const isValid = activeMap.consonants[combo] || (activeMap.specials && activeMap.specials[combo]) || activeMap.vowels[combo];
-
+            
             if (!isValid) {
                 // EXPLICIT BARAHA LOGIC: Replace ~ with ZWNJ (Halant Non-Joiner)
-                // Delete the prefix char (~ at cursorPos-2)
-                applyToEditor(cursorPos - 1, 1, ZWNJ, 'special', "");
-
-                // Shift cursor back because we removed a character?
-                // Wait: Removed 1 char (~). Added 1 char (ZWNJ). Length same.
-                // But text selection might have shifted.
-                // Resetting logic.
-                // oldText:  ...k~h
-                // newText:  ...k[ZWNJ]h
-                // Cursor was after h. Should still be after h.
-                // applyToEditor updates editor value and sets cursor.
-                // But it assumes we are inserting 'output' at 'cursorPos - deleteCount'.
-                // Here we called applyToEditor(cursorPos - 1, 1, ZWNJ, ...)
-                // This means at (cursorPos - 1), delete 1 char (~), insert ZWNJ.
-                // The 'h' (charTyped) is AFTER this position. It remains untouched.
-
-                state.lastInput = ""; // Reset so 'h' is fresh
-                // Do NOT return. Fall through to process the current 'charTyped' as a fresh letter.
+                applyToEditor(cursorPos - 1, 1, ZWNJ, 'special', ""); 
+                state.lastInput = ""; 
+                // Fall through to process the current 'charTyped'
             }
         }
 
@@ -696,14 +706,14 @@
 
         // 3. EXPLICIT SOFT BREAK (Sampurna =)
         if (!isBreakKeyPrefix && charTyped === activeMap.breakKey) {
-            applyToEditor(cursorPos, 1, "", 'special', "");
-            state.lastInput = "";
+            applyToEditor(cursorPos, 1, "", 'special', ""); 
+            state.lastInput = ""; 
             return;
         }
 
         if (activeMap.name === "Sampurna" && autoAnusvaraToggle.checked && activeMap.consonants[charTyped]) {
             let prevKey = state.lastInput;
-            if ( (prevKey === 'n' && autoAnusvaraTriggers['n'].includes(charTyped)) ||
+            if ( (prevKey === 'n' && autoAnusvaraTriggers['n'].includes(charTyped)) || 
                  (prevKey === 'm' && autoAnusvaraTriggers['m'].includes(charTyped) && charTyped !== 'm') ) {
                 applyToEditor(cursorPos - 1, 2, "ಂ", 'special', ""); cursorPos = cursorPos - 1;
             }
@@ -713,7 +723,7 @@
 
         if (charTyped === activeMap.zwjKey) {
             const current = editor.value;
-            const beforeChar = current.substring(cursorPos - 2, cursorPos - 1);
+            const beforeChar = current.substring(cursorPos - 2, cursorPos - 1); 
             if (state.lastType === 'consonant' || beforeChar === VIRAMA) {
                 applyToEditor(cursorPos, 2, ZWJ + VIRAMA, 'consonant', ""); return;
             } else if (state.lastType === 'vowel' || state.lastType === 'matra') {
@@ -725,7 +735,7 @@
         else if (!processed && state.lastInput) {
             const potentialMerge = state.lastInput + charTyped;
             if (activeMap.specials && activeMap.specials[potentialMerge]) {
-                deleteCount = state.lastOutput.length + 1; output = specialChars[activeMap.specials[potentialMerge]] || activeMap.specials[potentialMerge];
+                deleteCount = state.lastOutput.length + 1; output = specialChars[activeMap.specials[potentialMerge]] || activeMap.specials[potentialMerge]; 
                 newKeyString = potentialMerge; type = 'special'; processed = true;
             } else if (activeMap.consonants[potentialMerge]) {
                 deleteCount = state.lastOutput.length + 1; output = activeMap.consonants[potentialMerge]; newKeyString = potentialMerge; type = 'consonant'; processed = true;
@@ -735,7 +745,7 @@
                     if (newOutput !== undefined) { deleteCount = state.lastOutput.length + 1; output = newOutput; newKeyString = potentialMerge; type = state.lastType; processed = true; }
                 }
             } else if (mantraToggle.checked && activeMap.mantra && activeMap.mantra[potentialMerge]) {
-                deleteCount = state.lastOutput.length + 1; output = specialChars[activeMap.mantra[potentialMerge]] || activeMap.mantra[potentialMerge];
+                deleteCount = state.lastOutput.length + 1; output = specialChars[activeMap.mantra[potentialMerge]] || activeMap.mantra[potentialMerge]; 
                 newKeyString = potentialMerge; type = 'special'; processed = true;
             } else if (mantraToggle.checked && mantraSpecial[potentialMerge]) {
                 deleteCount = state.lastOutput.length + 1; output = mantraSpecial[potentialMerge]; newKeyString = potentialMerge; type = 'special'; processed = true;
@@ -743,18 +753,18 @@
         }
 
         if (!processed) {
-            if (mantraToggle.checked && (activeMap.mantra && activeMap.mantra[charTyped] || mantraSpecial[charTyped])) {
-                const val = (activeMap.mantra && activeMap.mantra[charTyped]); output = val ? (specialChars[val] || val) : mantraSpecial[charTyped]; type = 'special'; processed = true;
-            } else if (activeMap.specials && activeMap.specials[charTyped]) {
-                output = specialChars[activeMap.specials[charTyped]] || activeMap.specials[charTyped]; type = 'special'; processed = true;
-            } else if (activeMap.consonants[charTyped]) {
-                output = activeMap.consonants[charTyped]; type = 'consonant';
+            if (mantraToggle.checked && (activeMap.mantra && activeMap.mantra[charTyped] || mantraSpecial[charTyped])) { 
+                const val = (activeMap.mantra && activeMap.mantra[charTyped]); output = val ? (specialChars[val] || val) : mantraSpecial[charTyped]; type = 'special'; processed = true; 
+            } else if (activeMap.specials && activeMap.specials[charTyped]) { 
+                output = specialChars[activeMap.specials[charTyped]] || activeMap.specials[charTyped]; type = 'special'; processed = true; 
+            } else if (activeMap.consonants[charTyped]) { 
+                output = activeMap.consonants[charTyped]; type = 'consonant'; 
                 if (state.lastType === 'vowel_halant' && output.endsWith(VIRAMA)) { output = output.slice(0, -1); type = 'vowel'; }
-                processed = true;
+                processed = true; 
             } else if (activeMap.vowels[charTyped]) {
                 const current = editor.value;
                 const beforeTyped = current.substring(cursorPos - 2, cursorPos - 1);
-                if (beforeTyped === VIRAMA && activeMap.matras[charTyped] !== undefined) { deleteCount = 2; output = activeMap.matras[charTyped]; type = 'matra'; }
+                if (beforeTyped === VIRAMA && activeMap.matras[charTyped] !== undefined) { deleteCount = 2; output = activeMap.matras[charTyped]; type = 'matra'; } 
                 else { output = activeMap.vowels[charTyped]; type = 'vowel'; }
                 processed = true;
             }
@@ -778,7 +788,7 @@
     function showToast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.className = "show"; setTimeout(() => t.className = "", 2000); }
     function openMapModal() { generateMapTable(); document.getElementById('fullMapModal').style.display = 'flex'; }
     function closeMapModal() { document.getElementById('fullMapModal').style.display = 'none'; editor.focus(); }
-    function openEmojiModal() {
+    function openEmojiModal() { 
         const container = document.getElementById('emojiContainer');
         if(container.innerHTML === "") {
             for(let cat in emojis) {
@@ -787,7 +797,7 @@
                 container.appendChild(div);
             }
         }
-        document.getElementById('emojiModal').style.display = 'flex';
+        document.getElementById('emojiModal').style.display = 'flex'; 
     }
     function closeEmojiModal() { document.getElementById('emojiModal').style.display = 'none'; editor.focus(); }
     window.onclick = function(e) { if(e.target == document.getElementById('fullMapModal')) closeMapModal(); if(e.target == document.getElementById('emojiModal')) closeEmojiModal(); }
@@ -803,7 +813,7 @@
                 let val = dataObj[k];
                 if (specialChars[val]) val = specialChars[val];
                 let displayVal = val.replace(ZWNJ, '').replace(ZWJ, '');
-                if (isControl) displayVal = val;
+                if (isControl) displayVal = val; 
                 if (displayVal === "" && val.includes(ZWJ)) displayVal = "ZWJ (Joiner)";
                 if (displayVal === "" && val.includes(ZWNJ)) displayVal = "ZWNJ (Force Halant)";
                 html += `<tr><td style="font-family:monospace; color:#bf360c; font-weight:bold; font-size:14px;">${k}</td><td style="font-family:'Noto Sans Kannada', sans-serif; font-size:16px;">${displayVal}</td></tr>`;
@@ -813,7 +823,7 @@
         let controls = {};
         if (activeMap.name === "Sampurna") controls = { "=": "Soft Break (ಕ್ಹ)", "^": "Force Halant (ಕ್‌ಹ)", "x": "ZWJ" };
         else if (activeMap.name === "Baraha") controls = { "~": "Halant Non-Joiner (ಕ್‌ಹ)", "^": "ZWJ (Joiner)", "~g": "Nga", "~j": "Nya" };
-        else controls = { "f": "Virama (್)", "F": "Arkavottu (೯)" };
+        else controls = { "f": "Virama (್)", "X": "Nukta / Ligatures (rX=ಱ)" };
         createSection("Control & Special Rules", controls, true);
         createSection("Vowels", activeMap.vowels);
         createSection("Matras", activeMap.matras);
