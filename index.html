@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>⌨️ Kannada Transliterator (v25.7)</title>
+    <title>⌨️ Kannada Transliterator Ultimate (v4.0)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -88,6 +88,35 @@
         button.emoji-btn { background: #fff9c4; color: #333; border: 1px solid #fbc02d; }
         button.emoji-btn:hover { background: #fff59d; }
 
+        /* Nudi Visual Keyboard Styles */
+        .nudi-controls {
+            display: none; /* Hidden by default */
+            margin-bottom: 15px; align-items: center; gap: 10px;
+            background: #fff3e0; padding: 10px; border-radius: 8px; border: 1px solid #ffe0b2;
+        }
+        .kbd-container { 
+            background: #eeeeee; padding: 20px; border-radius: 12px; margin-bottom: 20px; 
+            display: none; flex-direction: column; align-items: center; 
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #e0e0e0;
+        }
+        .kbd-container.show { display: flex; }
+        .kbd-row { display: flex; justify-content: center; gap: 6px; margin-bottom: 8px; width: 100%; max-width: 850px; }
+        .row-1 { padding-left: 30px; } .row-2 { padding-left: 55px; }
+        
+        .key-cap { 
+            width: 52px; height: 52px; background: white; border: 1px solid #bbb; border-radius: 6px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            cursor: pointer; transition: 0.1s; box-shadow: 0 2px 0 #ccc; user-select: none;
+        }
+        .key-cap:hover { background: #fffde7; border-color: #fbc02d; }
+        .key-cap:active { transform: translateY(2px); box-shadow: none; }
+        .key-cap.shift-key { width: 90px; background: #cfd8dc; font-weight: bold; color: #455a64; }
+        .key-cap.active { background: var(--primary); color: white; border-color: var(--primary-dark); box-shadow: 0 2px 0 var(--primary-dark); }
+        .key-cap .glyph { font-family: 'Noto Sans Kannada', sans-serif; font-size: 18px; font-weight: bold; color: #bf360c; }
+        .key-cap .key-label { font-size: 10px; color: #757575; margin-top: 2px; font-weight: bold;}
+        .key-cap.active .glyph, .key-cap.active .key-label { color: white; }
+
+
         .virtual-keys { 
             display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; 
             padding: 12px; background: #fffde7; border: 1px solid #fff59d; border-radius: 12px; 
@@ -141,16 +170,17 @@
 
 <div class="container">
     <h1>⌨️ Kannada Transliterator</h1>
-    
+
     <div class="toolbar">
         <div class="control-group">
             <span class="label">Input Scheme</span>
             <select id="schemeSelect" onchange="changeScheme()">
                 <option value="sampurna">ಸಂಪೂರ್ಣ (Native)</option>
-                <option value="baraha">ಬರಹ</option>
+                <option value="baraha">ಬರಹ (Baraha)</option>
+                <option value="nudi">ನುಡಿ (Nudi/KaGaPa)</option>
             </select>
         </div>
-        
+
         <div class="toggle-group" id="autoAnusvaraGroup">
             <label class="toggle-label" title="anka → ಅಂಕ, pampa → ಪಂಪ"><input type="checkbox" id="autoAnusvara" checked> Auto ಅನುಸ್ವಾರ <span class="shortcut">Alt+A</span></label>
         </div>
@@ -160,7 +190,7 @@
             <label class="toggle-label" title="Enable/Disable ಕನ್ನಡ ಸಂಖ್ಯೆಗಳು"><input type="checkbox" id="numMode"> Numbers <span class="shortcut">Alt+N</span></label>
             <label class="toggle-label" title="Type in English (No Transliteration)"><input type="checkbox" id="engMode"> English <span class="shortcut">Alt+E</span></label>
         </div>
-        
+
         <div>
             <button class="font-btn" onclick="changeFontSize(2)" title="Increase Font">A+</button>
             <button class="font-btn" onclick="changeFontSize(-2)" title="Decrease Font">A-</button>
@@ -169,11 +199,17 @@
         <button class="emoji-btn" onclick="openEmojiModal()" title="Insert Emoji">Emoji</button>
         <button class="info" onclick="openMapModal()" title="View Full Mapping of Transliteration Scheme">Map</button>
         <div style="flex-grow:1;"></div>
-        
+
         <button onclick="saveText()">Download</button>
         <button onclick="copyText()">Copy</button>
         <button class="secondary" onclick="clearText()">Clear</button>
     </div>
+
+    <div class="nudi-controls" id="nudiControls">
+        <button id="toggleKbdBtn" onclick="toggleKeyboard()" style="background:#fbc02d; color:#3e2723;">Show On-Screen Keyboard</button>
+        <span class="label" style="color:#bf360c;">Nudi Scheme Active (Visual Mode)</span>
+    </div>
+    <div id="keyboard" class="kbd-container"></div>
 
     <div class="memory-bar" id="memoryBar"></div>
 
@@ -209,33 +245,40 @@
     const ZWJ = '\u200D';
     const NUKTA = '\u0CBC';
 
-    // Auto Anusvara Trigger Groups
     const autoAnusvaraTriggers = {
-        'n': ['k','g','c','j','T','D','t','d'], 
-        'm': ['p','b','m'] 
+        'n': ['k','g','c','j','T','D','t','d'],
+        'm': ['p','b','m']
     };
 
-	const emojis = {
-	smileys: ["😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😮‍💨", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🫣", "🤭", "🫢", "🫡", "🤫", "🫠", "🤥", "😶", "😶‍🌫️", "😐", "😑", "😬", "🫨", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😵", "😵‍💫", "🫥", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👹", "👺", "🤡", "💩", "👻", "💀", "☠️", "👽", "👾", "🤖", "🎃", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾"],
-	people: ["👋", "🤚", "🖐️", "✋", "🖖", "👌", "🤌", "🤏", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉", "👆", "🖕", "👇", "☝️", "👍", "👎", "✊", "👊", "🤛", "🤜", "👏", "🙌", "👐", "🤲", "🤝", "🙏", "✍️", "💅", "🤳", "💪", "🦾", "🦿", "🦵", "🦶", "👂", "🦻", "👃", "🧠", "🫀", "🫁", "🦷", "🦴", "👀", "👁️", "👅", "👄", "🫦", "💋", "🩸"],
-	nature: ["🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐻‍❄️", "🐨", "🐯", "🦁", "🐮", "🐷", "🐽", "🐸", "🐵", "🐒", "🦍", "🦧", "🐶", "🐕", "🦮", "🐕‍🦺", "🐩", "🐺", "🦊", "🦝", "🐱", "🐈", "🐈‍⬛", "🦁", "🐯", "🐅", "🐆", "🐴", "🐎", "🦄", "🦓", "🦌", "🦬", "🐮", "🐂", "🐃", "🐄", "🐷", "🐖", "🐗", "🐽", "🐏", "🐑", "🐐", "🐪", "🐫", "🦙", "🦒", "🐘", "🦣", "🦏", "🦛", "🐭", "🐁", "🐀", "🐹", "🐰", "🐇", "🐿️", "🦫", "🦔", "🦇", "🐻", "🐨", "🐼", "🦥", "🦦", "🦨", "🦘", "🦡", "🐾", "🦃", " chicken", "🐓", "🐣", "🐤", "🐥", "🐦", "🐧", "🕊️", "🦅", "🦆", "🦢", "🦉", "🦤", "🦩", "🦚", "🦜", "🐸", "🐊", "🐢", "🦎", "🐍", "🐲", "🐉", "🦕", "🦖", "🐳", "🐋", "🐬", "🦭", "🐟", "🐠", "🐡", "🦈", "🐙", "🐚", "🪸", "🐌", "🦋", "🐛", "🐜", "🐝", "🪲", "🐞", "🦗", "🕷️", "🕸️", "🦂", "🦟", "🪰", "🪱", "🦠", "💐", "🌸", "💮", "🪷", "🏵️", "🌹", "🥀", "🌺", "🌻", "🌼", "🌷", "🌱", "🪴", "🌲", "🌳", "🌴", "🌵", "🌾", "🌿", "☘️", "🍀", "🍁", "🍂", "🍃", "🍄", "🌰", "🐚", "🪨"],
-	food: ["🍏", "🍎", "🍐", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🫐", " melon", "🍒", "🍑", "🥭", "🍍", "🥥", "🥝", "🍅", "🍆", "🥑", "🥦", "🥬", "🥒", "🌶️", "🫑", "🌽", "🥕", "🫒", "🧄", "🧅", "🥔", "🍠", "🥐", "🥯", "🍞", "🥖", "🥨", "🧀", "🥚", "🍳", "🧈", "🥞", "🧇", "🥓", "🥩", "🍗", "🍖", "🌭", "🍔", "🍟", "🍕", "🫓", "🥪", "🥙", "🧆", "🌮", "🌯", "🫔", "🥗", "🥘", "🫕", "🥣", "🍝", "🍜", "🍲", "🍛", "🍣", "🍱", "🥟", "🦪", "🍤", "🍙", "🍚", "🍘", "🍥", "🥠", "🍢", "🍡", "🍧", "🍨", "🍦", "🥧", "🧁", "🍰", "🎂", "🍮", "🍭", "🍬", "🍫", "🍿", "🍩", "🍪", "🌰", "🥜", "🍯", "🥛", "☕", "🫖", "🍵", "🍶", "🍾", "🍷", "🍸", "🍹", "🍺", "🍻", "🥂", "🥃", "🥤", "🧋", "🧃", "🧉", "🧊", "🥢", "🍽️", "🍴", "🥄", "🔪", "🫙", "🏺"],
-	travel: ["🌍", "🌎", "🌏", "🌐", "🗺️", "🗾", "🧭", "🏔️", "⛰️", "🌋", "🗻", "🏕️", "🏖️", "🏝️", "🏙️", "🏗️", "🧱", "🏘️", "🏚️", "🏠", "🏡", "🏢", "🏣", "🏤", "🏥", "🏦", "🏨", "🏩", "🏪", "🏫", "🏬", "🏭", "🏯", "🏰", "💒", "🗼", "🗽", "⛪", "🕌", "🛕", "🕍", "⛩️", "🕋", "⛲", "⛺", "🌁", "🌃", "🏙️", "🌄", "🌅", "🌆", "🌇", "🌉", "♨️", "🎠", "🎡", "🎢", "💈", "🎪", "🚂", "🚃", "🚄", "🚅", "🚆", "🚇", "🚈", "🚉", "🚊", "🚝", "🚞", "🚋", "🚌", "🚍", "🚎", "🚐", "🚑", "🚒", "🚓", "🚔", "🚕", "🚖", "🚗", "🚘", "🚙", "🛻", "🚚", "🚛", "🚜", "🏎️", "🛵", "🦽", "🦼", "🛺", "🚲", "🛴", "🛹", "🛼", "⛽", "🛞", "🚨", "🚥", "🚦", "🛑", "🚧", "⚓", "🛟", "⛵", "🛶", "🚤", "🛳️", "⛴️", "🛥️", "🚢", "✈️", "🛩️", "🛫", "🛬", "🪂", "💺", "🚁", "🚟", "🚠", "🚡", "🛰️", "🚀", "🛸", "🪐", "🌠", "🌌", "☁️", "⛅", "⛈️", "🌤️", "🌥️", "🌦️", "🌧️", "🌨️", "🌩️", "🌪️", "🌫️", "🌬️", "🌀", "🌈", "🌂", "☂️", "☔", "⛱️", "⚡", "❄️", "☃️", "⛄", "☄️", "🔥", "💧", "🌊"],
-	activities: ["🎃", "🎄", "🎆", "🎇", "🧨", "✨", "🎈", "🎉", "🎊", "🎋", "🎍", "🎎", "🎏", "🎐", "🎑", "🧧", "🎀", "🎁", "🎗️", "🎟️", "🎫", "🎖️", "🏆", "🏅", "🥇", "🥈", "🥉", "⚽", "⚾", "🥎", "🏀", "🏐", "🏈", "🏉", "🎾", "🎾", "🏸", "🏏", "🏑", "🏒", "🥍", "🏓", "🏹", "🎣", "🤿", "🥊", "🥋", "⛸️", "🎿", "🛷", "🥌", "🎯", "🪀", "🪁", "🎱", "🔮", "🪄", "🎮", "🕹️", "🎰", "🎲", "🧩", "🧸", "🪅", "🪩", "🖼️", "🎨", "🧵", "🪡", "🧶", "🪢"],
-	objects: ["👓", "🕶️", "🥽", "🥼", "🦺", "👔", "👕", "👖", "🧣", "🧤", "🧥", "🧦", "👗", "👘", "🥻", "🩱", "🩲", "🩳", "👙", "👚", "👛", "👜", "👝", "🛍️", "🎒", "🩴", "👞", "👟", "🥾", "🥿", "👠", "👡", "👢", "👑", "👒", "🎩", "🎓", "🧢", "⛑️", "📿", "💄", "💍", "💎", "📢", "📣", "📯", "🎙️", "🎚️", "🎛️", "🎤", "🎧", "📻", "🎷", "🪗", "🎸", "🎹", "🎺", "🎻", "🪕", "🥁", "🪘", "📱", "📲", "☎️", "📞", "📟", "📠", "🔋", "🪫", "🔌", "💻", "🖥️", "🖨️", "⌨️", "🖱️", "🖲️", "💽", "💾", "💿", "📀", "🧮", "🎥", "🎞️", "📽️", "🎬", "📺", "📷", "📸", "📹", "📼", "🔍", "🔎", "🕯️", "💡", " flashlight", "🏮", "🪔", "📔", "📕", "📖", "📗", "📘", "📙", "📚", "📓", "📒", "📃", "📜", "📄", "📰", "🗞️", "📑", "🔖", "🏷️", "💰", "🪙", "💴", "💵", "💶", "💷", "💸", "💳", "🧾", "✉️", "💌", "📧", "🧧", "📨", "📩", "📤", "📥", "📦", "📫", "📪", "📬", "📭", "📮", "🗳️", "✏️", "✒️", "🖋️", "🖊️", "🖌️", "🖍️", "📝", "💼", "📁", "📂", "🗂️", "📅", "📆", "🗒️", "🗓️", "📇", "📈", "📉", "📊", "📋", "📌", "📍", "📎", "🖇️", "📏", "📐", "✂️", "🗃️", "🗄️", "🗑️", "🔒", "🔓", "🔏", "🔐", "🔑", "🗝️", "🔨", "🪓", "⛏️", "⚒️", "🛠️", "🗡️", "⚔️", "💣", "🪃", "🏹", "🛡️", "🪚", "🔧", "🔩", "⚙️", "🗜️", "⚖️", "🦯", "🔗", "⛓️", "🪝", "🧰", "🧲", "🪜", "⚗️", "🧪", "🧫", "🧬", "🔬", "🔭", "📡", "💉", "🩸", "💊", "🩹", "🩺", "🪟", "🚪", "🛗", "🪞", "🪟", "🛏️", "🛋️", "🪑", "🚽", "🪠", "🚿", "🛁", "🪤", "🪒", "🧴", "🧷", "🧹", "🧺", "🧻", "🧼", "🧽", "🧯", "🛒", "🚬", "⚰️", "🪦", "⚱️", "🏺", "🔮", "📿", "🧿", "💈", "⚗️", "🔭", "🔬", "🕳️", "🩹", "🩺"],
-	symbols: ["💘", "💝", "💖", "💗", "💓", "💞", "💕", "💟", "❣️", "💔", "❤️‍🔥", "❤️‍🩹", "❤️", "🧡", "💛", "💚", "💙", "💜", "🤎", "🖤", "🤍", "💯", "♨️", "💢", "💬", "👁️‍🗨️", "🗨️", "🗯️", "💭", "💤", "🌐", "♠️", "♥️", "♦️", "♣️", "🃏", "🀄", "🎴", "🎭", "🔇", "🔈", "🔉", "🔊", "🔔", "🔕", "🎼", "🎵", "🎶", "💹", "🏧", "🚮", "🚰", "♿", "🚹", "🚺", "🚻", "🚼", "🚾", "🛂", "🛃", "🛄", "🛅", "⚠️", "🚸", "⛔", "🚫", "🚳", "🚭", "🚯", "🚱", "🚷", "📵", "🔞", "☢️", "☣️", "⬆️", "↗️", "➡️", "↘️", "⬇️", "↙️", "⬅️", "↖️", "↕️", "↔️", "↩️", "↪️", "⤴️", "⤵️", "🔃", "🔄", "🔙", "🔚", "🔛", "🔜", "🔝", "🛐", "⚛️", "🕉️", "✡️", "☸️", "☯️", "✝️", "☦️", "☪️", "☮️", "🕎", "🔯", "♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓", "⛎", "🔀", "🔁", "🔂", "▶️", "⏩", "⏭️", "⏯️", "◀️", "⏪", "⏮️", "🔼", "⏫", "🔽", "⏬", "⏸️", "⏹️", "⏺️", "⏏️", "🎦", "🔅", "🔆", "📶", "📳", "📴", "♀️", "♂️", "⚧", "✖️", "➕", "➖", "➗", "♾️", "‼️", "⁉️", "❓", "❔", "❕", "❗️", "〰️", "💱", "💲", "⚕️", "♻️", "⚜️", "🔱", "📛", "🔰", "⭕", "✅", "☑️", "✔️", "❌", "❎", "➰", "➿", "〽️", "✳️", "✴️", "❇️", "©️", "®️", "™️", "#️⃣", "*️⃣", "0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟", "🔠", "🔡", "🔢", "🔣", "🔤", "🅰️", "🆎", "🅱️", "🆑", "🆒", "🆓", "ℹ️", "🆔", "Ⓜ️", "🆕", "🆖", "🅾️", "🆗", "🅿️", "🆘", "🆙", "🆚", "🈁", "🈂️", "🈷️", "🈶", "🈯", "🉐", "🈹", "🈚", "🈲", "🉑", "🈸", "🈴", "🈳", "㊗️", "㊙️", "🈺", "🈵", "🔴", "🟠", "🟡", "🟢", "🔵", "🟣", "🟤", "⚫", "⚪", "🟥", "🟧", "🟨", "🟩", "🟦", "🟪", "🟫", "⬛", "⬜", "◼️", "◻️", "◾", "◽", "▪️", "▫️", "🔶", "🔷", "🔸", "🔹", "🔺", "🔻", "💠", "🔘", "🔳", "🔲"]
-	};
-    // --- 2. SCHEMES ---
+    const kbdDefinition = [
+        { row: 0, keys: "1234567890".split("") },
+        { row: 1, keys: "qwertyuiop".split("") },
+        { row: 2, keys: "asdfghjkl".split("") },
+        { row: 3, keys: "zxcvbnm".split("") }
+    ];
+
+    const emojis = {
+        smileys: ["😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😮‍💨", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🫣", "🤭", "🫢", "🫡", "🤫", "🫠", "🤥", "😶", "😶‍🌫️", "😐", "😑", "😬", "🫨", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😵", "😵‍💫", "🫥", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👹", "👺", "🤡", "💩", "👻", "💀", "☠️", "👽", "👾", "🤖", "🎃", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾"],
+        people: ["👋", "🤚", "🖐️", "✋", "🖖", "👌", "🤌", "🤏", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉", "👆", "🖕", "👇", "☝️", "👍", "👎", "✊", "👊", "🤛", "🤜", "👏", "🙌", "👐", "🤲", "🤝", "🙏", "✍️", "💅", "🤳", "💪", "🦾", "🦿", "🦵", "🦶", "👂", "🦻", "👃", "🧠", "🫀", "🫁", "🦷", "🦴", "👀", "👁️", "👅", "👄", "🫦", "💋", "🩸"],
+        nature: ["🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐻‍❄️", "🐨", "🐯", "🦁", "🐮", "🐷", "🐽", "🐸", "🐵", "🐒", "🦍", "🦧", "🐶", "🐕", "🦮", "🐕‍🦺", "🐩", "🐺", "🦊", "🦝", "🐱", "🐈", "🐈‍⬛", "🦁", "🐯", "🐅", "🐆", "🐴", "🐎", "🦄", "🦓", "🦌", "🦬", "🐮", "🐂", "🐃", "🐄", "🐷", "🐖", "🐗", "🐽", "🐏", "🐑", "🐐", "🐪", "🐫", "🦙", "🦒", "🐘", "🦣", "🦏", "🦛", "🐭", "🐁", "🐀", "🐹", "🐰", "🐇", "🐿️", "🦫", "🦔", "🦇", "🐻", "🐨", "🐼", "🦥", "🦦", "🦨", "🦘", "🦡", "🐾", "🦃", " chicken", "🐓", "🐣", "🐤", "🐥", "🐦", "🐧", "🕊️", "🦅", "🦆", "🦢", "🦉", "🦤", "🦩", "🦚", "🦜", "🐸", "🐊", "🐢", "🦎", "🐍", "🐲", "🐉", "🦕", "🦖", "🐳", "🐋", "🐬", "🦭", "🐟", "🐠", "🐡", "🦈", "🐙", "🐚", "🪸", "🐌", "🦋", "🐛", "🐜", "🐝", "🪲", "🐞", "🦗", "🕷️", "🕸️", "🦂", "🦟", "🪰", "🪱", "🦠", "💐", "🌸", "💮", "🪷", "🏵️", "🌹", "🥀", "🌺", "🌻", "🌼", "🌷", "🌱", "🪴", "🌲", "🌳", "🌴", "🌵", "🌾", "🌿", "☘️", "🍀", "🍁", "🍂", "🍃", "🍄", "🌰", "🐚", "🪨"],
+        food: ["🍏", "🍎", "🍐", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🫐", " melon", "🍒", "🍑", "🥭", "🍍", "🥥", "🥝", "🍅", "🍆", "🥑", "🥦", "🥬", "🥒", "🌶️", "🫑", "🌽", "🥕", "🫒", "🧄", "🧅", "🥔", "🍠", "🥐", "🥯", "🍞", "🥖", "🥨", "🧀", "🥚", "🍳", "🧈", "🥞", "🧇", "🥓", "🥩", "🍗", "🍖", "🌭", "🍔", "🍟", "🍕", "🫓", "🥪", "🥙", "🧆", "🌮", "🌯", "🫔", "🥗", "🥘", "🫕", "🥣", "🍝", "🍜", "🍲", "🍛", "🍣", "🍱", "🥟", "🦪", "🍤", "🍙", "🍚", "🍘", "🍥", "🥠", "🍢", "🍡", "🍧", "🍨", "🍦", "🥧", "🧁", "🍰", "🎂", "🍮", "🍭", "🍬", "🍫", "🍿", "🍩", "🍪", "🌰", "🥜", "🍯", "🥛", "☕", "🫖", "🍵", "🍶", "🍾", "🍷", "🍸", "🍹", "🍺", "🍻", "🥂", "🥃", "🥤", "🧋", "🧃", "🧉", "🧊", "🥢", "🍽️", "🍴", "🥄", "🔪", "🫙", "🏺"],
+        travel: ["🌍", "🌎", "🌏", "🌐", "🗺️", "🗾", "🧭", "🏔️", "⛰️", "🌋", "🗻", "🏕️", "🏖️", "🏝️", "🏙️", "🏗️", "🧱", "🏘️", "🏚️", "🏠", "🏡", "🏢", "🏣", "🏤", "🏥", "🏦", "🏨", "🏩", "🏪", "🏫", "🏬", "🏭", "🏯", "🏰", "💒", "🗼", "🗽", "⛪", "🕌", "🛕", "🕍", "⛩️", "🕋", "⛲", "⛺", "🌁", "🌃", "🏙️", "🌄", "🌅", "🌆", "🌇", "🌉", "♨️", "🎠", "🎡", "🎢", "💈", "🎪", "🚂", "🚃", "🚄", "🚅", "🚆", "🚇", "🚈", "🚉", "🚊", "🚝", "🚞", "🚋", "🚌", "🚍", "🚎", "🚐", "🚑", "🚒", "🚓", "🚔", "🚕", "🚖", "🚗", "🚘", "🚙", "🛻", "🚚", "🚛", "🚜", "🏎️", "🛵", "🦽", "🦼", "🛺", "🚲", "🛴", "🛹", "🛼", "⛽", "🛞", "🚨", "🚥", "🚦", "🛑", "🚧", "⚓", "🛟", "⛵", "🛶", "🚤", "🛳️", "⛴️", "🛥️", "🚢", "✈️", "🛩️", "🛫", "🛬", "🪂", "💺", "🚁", "🚟", "🚠", "🚡", "🛰️", "🚀", "🛸", "🪐", "🌠", "🌌", "☁️", "⛅", "⛈️", "🌤️", "🌥️", "🌦️", "🌧️", "🌨️", "🌩️", "🌪️", "🌫️", "🌬️", "🌀", "🌈", "🌂", "☂️", "☔", "⛱️", "⚡", "❄️", "☃️", "⛄", "☄️", "🔥", "💧", "🌊"],
+        activities: ["🎃", "🎄", "🎆", "🎇", "🧨", "✨", "🎈", "🎉", "🎊", "🎋", "🎍", "🎎", "🎏", "🎐", "🎑", "🧧", "🎀", "🎁", "🎗️", "🎟️", "🎫", "🎖️", "🏆", "🏅", "🥇", "🥈", "🥉", "⚽", "⚾", "🥎", "🏀", "🏐", "🏈", "🏉", "🎾", "🎾", "🏸", "🏏", "🏑", "🏒", "🥍", "🏓", "🏹", "🎣", "🤿", "🥊", "🥋", "⛸️", "🎿", "🛷", "🥌", "🎯", "🪀", "🪁", "🎱", "🔮", "🪄", "🎮", "🕹️", "🎰", "🎲", "🧩", "🧸", "🪅", "🪩", "🖼️", "🎨", "🧵", "🪡", "🧶", "🪢"],
+        objects: ["👓", "🕶️", "🥽", "🥼", "🦺", "👔", "👕", "👖", "🧣", "🧤", "🧥", "🧦", "👗", "👘", "🥻", "🩱", "🩲", "🩳", "👙", "👚", "👛", "👜", "👝", "🛍️", "🎒", "🩴", "👞", "👟", "🥾", "🥿", "👠", "👡", "👢", "👑", "👒", "🎩", "🎓", "🧢", "⛑️", "📿", "💄", "💍", "💎", "📢", "📣", "📯", "🎙️", "🎚️", "🎛️", "🎤", "🎧", "📻", "🎷", "🪗", "🎸", "🎹", "🎺", "🎻", "🪕", "🥁", "🪘", "📱", "📲", "☎️", "📞", "📟", "📠", "🔋", "🪫", "🔌", "💻", "🖥️", "🖨️", "⌨️", "🖱️", "🖲️", "💽", "💾", "💿", "📀", "🧮", "🎥", "🎞️", "📽️", "🎬", "📺", "📷", "📸", "📹", "📼", "🔍", "🔎", "🕯️", "💡", " flashlight", "🏮", "🪔", "📔", "📕", "📖", "📗", "📘", "📙", "📚", "📓", "📒", "📃", "📜", "📄", "📰", "🗞️", "📑", "🔖", "🏷️", "💰", "🪙", "💴", "💵", "💶", "💷", "💸", "💳", "🧾", "✉️", "💌", "📧", "🧧", "📨", "📩", "📤", "📥", "📦", "📫", "📪", "📬", "📭", "📮", "🗳️", "✏️", "✒️", "🖋️", "🖊️", "🖌️", "🖍️", "📝", "💼", "📁", "📂", "🗂️", "📅", "📆", "🗒️", "🗓️", "📇", "📈", "📉", "📊", "📋", "📌", "📍", "📎", "🖇️", "📏", "📐", "✂️", "🗃️", "🗄️", "🗑️", "🔒", "🔓", "🔏", "🔐", "🔑", "🗝️", "🔨", "🪓", "⛏️", "⚒️", "🛠️", "🗡️", "⚔️", "💣", "🪃", "🏹", "🛡️", "🪚", "🔧", "🔩", "⚙️", "🗜️", "⚖️", "🦯", "🔗", "⛓️", "🪝", "🧰", "🧲", "🪜", "⚗️", "🧪", "🧫", "🧬", "🔬", "🔭", "📡", "💉", "🩸", "💊", "🩹", "🩺", "🪟", "🚪", "🛗", "🪞", "🪟", "🛏️", "🛋️", "🪑", "🚽", "🪠", "🚿", "🛁", "🪤", "🪒", "🧴", "🧷", "🧹", "🧺", "🧻", "🧼", "🧽", "🧯", "🛒", "🚬", "⚰️", "🪦", "⚱️", "🏺", "🔮", "📿", "🧿", "💈", "⚗️", "🔭", "🔬", "𕳟", "🩹", "🩺"],
+        symbols: ["💘", "💝", "💖", "💗", "💓", "💞", "💕", "💟", "❣️", "💔", "❤️‍🔥", "❤️‍🩹", "❤️", "🧡", "💛", "💚", "💙", "💜", "🤎", "🖤", "🤍", "💯", "♨️", "💢", "💬", "👁️‍🗨️", "🗨️", "🗯️", "💭", "💤", "🌐", "♠️", "♥️", "♦️", "♣️", "🃏", "🀄", "🎴", "🎭", "🔇", "🔈", "🔉", "🔊", "🔔", "🔕", "🎼", "🎵", "🎶", "💹", "🏧", "🚮", "🚰", "♿", "🚹", "🚺", "🚻", "🚼", "🚾", "🛂", "🛃", "🛄", "🛅", "⚠️", "🚸", "⛔", "🚫", "🚳", "🚭", "🚯", "🚱", "🚷", "📵", "🔞", "☢️", "☣️", "⬆️", "↗️", "➡️", "↘️", "⬇️", "↙️", "⬅️", "↖️", "↕️", "↔️", "↩️", "↪️", "⤴️", "⤵️", "🔃", "🔄", "🔙", "🔚", "🔛", "🔜", "🔝", "🛐", "⚛️", "🕉️", "✡️", "☸️", "☯️", "✝️", "☦️", "☪️", "☮️", "🕎", "🔯", "♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓", "⛎", "", "🔁", "🔂", "▶️", "⏩", "⏭️", "⏯️", "◀️", "⏪", "⏮️", "🔼", "⏫", "🔽", "⏬", "⏸️", "⏹️", "⏺️", "⏏️", "🎦", "🔅", "🔆", "📶", "📳", "📴", "♀️", "♂️", "⚧", "✖️", "➕", "➖", "➗", "♾️", "‼️", "⁉️", "❓", "❔", "❕", "❗️", "〰️", "💱", "💲", "⚕️", "♻️", "⚜️", "🔱", "📛", "🔰", "⭕", "✅", "☑️", "✔️", "❌", "❎", "➰", "➿", "〽️", "✳️", "✴️", "❇️", "©️", "®️", "™️", "#️⃣", "*️⃣", "0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟", "🔠", "🔡", "🔢", "🔣", "🔤", "🅰️", "🆎", "🅱️", "🆑", "🆒", "🆓", "ℹ️", "🆔", "Ⓜ️", "🆕", "🆖", "🅾️", "🆗", "🅿️", "🆘", "🆙", "🆚", "🈁", "🈂️", "🈷️", "🈶", "🈯", "🉐", "🈹", "🈚", "🈲", "🉑", "🈸", "🈴", "🈳", "㊗️", "㊙️", "🈺", "🈵", "🔴", "🟠", "🟡", "🟢", "🔵", "🟣", "🟤", "⚫", "⚪", "🟥", "🟧", "🟨", "🟩", "🟦", "🟪", "🟫", "⬛", "⬜", "◼️", "◻️", "◾", "◽", "▪️", "▫️", "🔶", "🔷", "🔸", "🔹", "🔺", "🔻", "💠", "🔘", "🔳", "🔲"]
+    };
+
     const schemes = {
         sampurna: {
             name: "Sampurna",
-            breakKey: '=', 
-            zwjKey: 'x',   
-            forceHalantKey: '^',
-            vowels: { 
-                "a": "ಅ", "aa": "ಆ", "A": "ಆ", "i": "ಇ", "ee": "ಈ", "I": "ಈ", "ii": "ಈ", 
-                "u": "ಉ", "oo": "ಊ", "U": "ಊ", "uu": "ಊ", "e": "ಎ", "E": "ಏ", "ai": "ಐ", 
-                "o": "ಒ", "O": "ಓ", "au": "ಔ", "ou": "ಔ", "R": "ಋ", "RR": "ೠ", "RU": "ೠ", 
+            isVisual: false,
+            breakKey: '=',        // Soft Break (Ligature allowed)
+            forceHalantKey: '^',  // Hard Break (ZWNJ - Visible Halant)
+            zwjKey: 'x',
+            vowels: {
+                "a": "ಅ", "aa": "ಆ", "A": "ಆ", "i": "ಇ", "ee": "ಈ", "I": "ಈ", "ii": "ಈ",
+                "u": "ಉ", "oo": "ಊ", "U": "ಊ", "uu": "ಊ", "e": "ಎ", "E": "ಏ", "ai": "ಐ",
+                "o": "ಒ", "O": "ಓ", "au": "ಔ", "ou": "ಔ", "R": "ಋ", "RR": "ೠ", "RU": "ೠ",
                 "q": "ಌ", "Q": "ೡ",
                 "M": "ಂ", "MM": "ಁ", "H": "ಃ"
             },
@@ -257,82 +300,87 @@
                 "Z": "ಜ"+NUKTA+VIRAMA, "Zh": "ಝ"+NUKTA+VIRAMA, "f": "ಫ"+NUKTA+VIRAMA,
                 "z": NUKTA
             },
-            specials: { 
-                "|": "danda", 
-                "||": "ddanda", 
-                "\\": "danda", 
-                "\\\\": "ddanda",
-                "OM": "om" 
+            specials: {
+                "|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda", "OM": "om"
             },
-            mantra: { "/": "anudatta", "\'": "udatta", "\"": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha",
-                      "C" : "೧॒॑", "V" : "೨॒॑", "B" : "೩॒॑"
-                    },
+            mantra: {
+                "/": "anudatta", "\'": "udatta", "\"": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha",
+                "C" : "೧॒॑", "V" : "೨॒॑", "B" : "೩॒॑"
+            },
             help: [
-                { title: "Control Keys", rows: [["=", "k=ha → ಕ್ಹ"], ["^", "r^ShA → ರ್‌ಷಾ"], ["x", "rxya → ರ‍್ಯ (ರ್ಯ ಬದಲು)"], ["x", "Axypal → ಆ್ಯಪಲ್"]] },
+                { title: "Control Keys", rows: [["=", "Soft Break (k=h -> ಕ್ಹ)"], ["^", "Force Halant (k^h -> ಕ್‌ಹ)"], ["x", "ZWJ (rxya → ರ‍್ಯ)"], ["x", "ZWJ (Axypal → ಆ್ಯಪಲ್)"]] },
                 { title: "Mantra", rows: [["/", "॒ (ಅನುದಾತ್ತ)"], ["\'", "॑ (ಸ್ವರಿತ)"], ["\"", "᳚ (ದೀರ್ಘ ಸ್ವರಿತ)"],  ["@", "ಗ್ಂ"+ZWNJ], ["#", "ಗ್ಗ್"+ZWNJ], ["$", "ಽ (ಅವಗ್ರಹ)"]] },
                 { title: "Specials / Punctuation", rows: [["M", "ಂ (ಅನುಸ್ವಾರ)"], ["MM", "ಁ (ಚಂದ್ರಬಿಂದು)"], ["H", "ಃ (ವಿಸರ್ಗ)"], ["OM", "ಓಂ"], ["|", "। (ದಂಡ)"], ["||", "॥ (2 ದಂಡ)"]] },
-                { title: "Special Consonants", rows: [["R", "ಱ (Rra)"], ["Rh", "ೞ (Lla)"], ["z", " ಼ (NUKTA)"], ["f", "ಫ಼ (Fa)"], ["Z", "ಜ಼ (Za)"], ["Zh", "ಝ಼ (Za)"]] }
+                { title: "Special Consonants", rows: [["Rh", "ಱ (Rra)"], ["RH", "ೞ (Lla)"], ["z", " ಼ (NUKTA)"], ["f", "ಫ಼ (Fa)"], ["Z", "ಜ಼ (Za)"], ["Zh", "ಝ಼ (Za)"]] }
             ],
             buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "।", "॥", "ಗ್ಂ"+ZWNJ, "ಗ್ಗ್"+ZWNJ, "ꣳ", "॒", "॑", "᳚", "ಽ" ]
         },
         baraha: {
             name: "Baraha",
-            breakKey: '~',
+            isVisual: false,
+            breakKey: '~',  // ZWNJ / Halant Non-Joiner (Prefix based)
             zwjKey: '^',
-            vowels: { 
-                "a": "ಅ", "aa": "ಆ", "A": "ಆ", "i": "ಇ", "ee": "ಈ", "I": "ಈ", "u": "ಉ", "oo": "ಊ", "U": "ಊ", 
-                "Ru": "ಋ", "RU": "ೠ", "~lu": "ಌ", "~lU": "ೡ", 
-                "e": "ಎ", "E": "ಏ", "ai": "ಐ", "o": "ಒ", "O": "ಓ", "au": "ಔ", "ou": "ಔ", 
-                "M": "ಂ", "~M": "ಁ", "H": "ಃ" 
+            vowels: {
+                "a": "ಅ", "aa": "ಆ", "A": "ಆ", "i": "ಇ", "ee": "ಈ", "I": "ಈ", "u": "ಉ", "oo": "ಊ", "U": "ಊ",
+                "Ru": "ಋ", "RU": "ೠ", "~lu": "ಌ", "~lU": "ೡ",
+                "e": "ಎ", "E": "ಏ", "ai": "ಐ", "o": "ಒ", "O": "ಓ", "au": "ಔ", "ou": "ಔ",
+                "M": "ಂ", "~M": "ಁ", "H": "ಃ"
             },
-            matras: { 
-                "a": "", "aa": "ಾ", "A": "ಾ", "i": "ಿ", "ee": "ೀ", "I": "ೀ", "u": "ು", "oo": "ೂ", "U": "ೂ", 
-                "Ru": "ೃ", "RU": "ೄ", "~lu": "ೢ", "~lU": "ೣ", 
-                "e": "ೆ", "E": "ೇ", "ai": "ೈ", "o": "ೊ", "O": "ೋ", "au": "ೌ", "ou": "ೌ" 
+            matras: {
+                "a": "", "aa": "ಾ", "A": "ಾ", "i": "ಿ", "ee": "ೀ", "I": "ೀ", "u": "ು", "oo": "ೂ", "U": "ೂ",
+                "Ru": "ೃ", "RU": "ೄ", "~lu": "ೢ", "~lU": "ೣ",
+                "e": "ೆ", "E": "ೇ", "ai": "ೈ", "o": "ೊ", "O": "ೋ", "au": "ೌ", "ou": "ೌ"
             },
             consonants: {
                 "k": "ಕ್", "K": "ಖ್", "kh": "ಖ್", "g": "ಗ್", "G": "ಘ್", "gh": "ಘ್", "~g": "ಙ್", "ng": "ಙ್",
                 "c": "ಚ್", "ch": "ಚ್", "C": "ಛ್", "Ch": "ಛ್", "j": "ಜ್", "J": "ಝ್", "jh": "ಝ್", "~j": "ಞ್", "ny": "ಞ್",
-                "T": "ಟ್", "Th": "ಠ್", "D": "ಡ್", "Dh": "ಢ್", "N": "ಣ್", 
-                "t": "ತ್", "th": "ಥ್", "d": "ದ್", "dh": "ಧ್", "n": "ನ್", 
-                "p": "ಪ್", "P": "ಫ್", "ph": "ಫ್", "b": "ಬ್", "B": "ಭ್", "bh": "ಭ್", "m": "ಮ್", 
-                "y": "ಯ್", "r": "ರ್", "l": "ಲ್", "L": "ಳ್", "v": "ವ್", "w": "ವ್", 
-                "sh": "ಶ್", "S": "ಶ್", "Sh": "ಷ್", "s": "ಸ್", "h": "ಹ್", 
+                "T": "ಟ್", "Th": "ಠ್", "D": "ಡ್", "Dh": "ಢ್", "N": "ಣ್",
+                "t": "ತ್", "th": "ಥ್", "d": "ದ್", "dh": "ಧ್", "n": "ನ್",
+                "p": "ಪ್", "P": "ಫ್", "ph": "ಫ್", "b": "ಬ್", "B": "ಭ್", "bh": "ಭ್", "m": "ಮ್",
+                "y": "ಯ್", "r": "ರ್", "l": "ಲ್", "L": "ಳ್", "v": "ವ್", "w": "ವ್",
+                "sh": "ಶ್", "S": "ಶ್", "Sh": "ಷ್", "s": "ಸ್", "h": "ಹ್",
                 "rx": "ಱ್", "~r": "ಱ್", "Lx": "ೞ್", "~l": "ೞ್",
-                "f": "ಫ"+NUKTA+VIRAMA, "z": "ಜ"+NUKTA+VIRAMA 
+                "f": "ಫ"+NUKTA+VIRAMA, "z": "ಜ"+NUKTA+VIRAMA
             },
-            specials: { 
-                "|": "danda", 
-                "||": "ddanda", 
-                "\\": "danda", 
-                "\\\\": "ddanda",
-                "&": "avagraha", 
-                "Rs": "rupee", 
-                "OM": "om", 
-                "~M": "chandrabindu", 
-                "~lu": "ಌ" 
+            specials: {
+                "|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda",
+                "&": "avagraha", "Rs": "rupee", "OM": "om", "~M": "chandrabindu", "~lu": "ಌ"
             },
             mantra: { },
             help: [
-                { title: "Control Keys", rows: [["~", "Soft Break (rAj~kumAr)"], ["^", "ZWJ (Joiner)"]] },
+                { title: "Control Keys", rows: [["~", "Halant Non-Joiner (rAj~kumAr)"], ["^", "ZWJ (Joiner)"]] },
                 { title: "Nasal / Old Consonants", rows: [["~g", "ಙ (Nga)"], ["~j", "ಞ (Nya)"], ["rx", "ಱ (Rra)"], ["Lx", "ೞ (Lla)"]] },
                 { title: "Specials / Vedic", rows: [["~M", "ಁ (Chandrabindu)"], ["&", "ಽ (Avagraha)"], ["~lu", "ಌ (Vocalic L)"], ["Rs", "₹ (Rupee)"], ["OM", "ಓಂ"]] }
             ],
             buttons: ["ಙ್", "ಞ್", "ಱ್", "ೞ್", "ಌ", "ಁ", "ಽ", "₹", "।", "॥", "ಗ್ಂ", "ಗ್ಗ್", "ꣳ", "॒", "॑", "᳚"]
+        },
+        nudi: {
+            name: "Nudi 6.1 (Visual)",
+            isVisual: true,
+            vowels: { "a":"ಅ","A":"ಆ","i":"ಇ","I":"ಈ","u":"ಉ","U":"ಊ","R":"ಋ","e":"ಎ","E":"ಏ","Y":"ಐ","o":"ಒ","O":"ಓ","V":"ಔ","M":"ಂ","H":"ಃ" },
+            matras: { "a":"","A":"ಾ","i":"ಿ","I":"ೀ","u":"ು","U":"ೂ","R":"ೃ","e":"ೆ","E":"ೇ","Y":"ೈ","o":"ೊ","O":"ೋ","V":"ೌ","M":"ಂ","H":"ಃ" },
+            consonants: { "k":"ಕ","K":"ಖ","g":"ಗ","G":"ಘ","z":"ಙ","c":"ಚ","C":"ಛ","j":"ಜ","J":"ಝ","Z":"ಞ","q":"ಟ","Q":"ಠ","w":"ಡ","W":"ಢ","N":"ಣ","t":"ತ","T":"ಥ","d":"ದ","D":"ಧ","n":"ನ","p":"ಪ","P":"ಫ","b":"ಬ","B":"ಭ","m":"ಮ","y":"ಯ","r":"ರ","l":"ಲ","v":"ವ","S":"ಶ","x":"ಷ","s":"ಸ","h":"ಹ","L":"ಳ","f":VIRAMA },
+            specials: { "|": "danda", "||": "ddanda" },
+            mantra: { "/": "anudatta", "\'": "udatta", "\"": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha" },
+            help: [
+                { title: "Visual Mode", rows: [["f", "Virama/Vottu"], ["F", "Arkavattu/R-Vottu"]] },
+                { title: "Consonants", rows: [["k", "ಕ"], ["K", "ಖ"], ["g", "ಗ"], ["G", "ಘ"], ["z", "ಙ"]] }
+            ],
+            buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "।", "॥", "ಗ್ಂ"+ZWNJ, "ಗ್ಗ್"+ZWNJ, "॒", "॑", "᳚", "ಽ"]
         }
     };
 
-    const commonSpecial = { "|": "।", "||": "॥" }; 
+    const commonSpecial = { "|": "।", "||": "॥" };
     const mantraSpecial = { "@": "ಗ್ಂ" + ZWNJ, "#": "ಗ್ಗ್" + ZWNJ, "/": "\u0952", "\'": "\u0951", "\"": "\u1CDA" };
     const commonNumbers = { "0": "೦", "1": "೧", "2": "೨", "3": "೩", "4": "೪", "5": "೫", "6": "೬", "7": "೭", "8": "೮", "9": "೯" };
     const specialChars = { "avagraha": "ಽ", "danda": "।", "ddanda": "॥", "om": "ಓಂ", "rupee": "₹", "anudatta": "\u0952", "udatta": "\u0951", "d_svarita": "\u1CDA", "chandrabindu": "ಁ" };
-    
-    // --- 3. STATE ---
-    let activeMap = schemes.sampurna; 
+
+    let activeMap = schemes.sampurna;
     let state = { lastInput: "", lastOutput: "", lastType: "" };
     let currentFontSize = 28;
-    let isBreakKeyPrefix = false; 
-    let phraseMemory = ["", "", "", "", ""]; 
+    let isBreakKeyPrefix = false;
+    let phraseMemory = ["", "", "", "", ""];
+    let isShifted = false;
 
     const editor = document.getElementById('editor');
     const autoAnusvaraToggle = document.getElementById('autoAnusvara');
@@ -341,32 +389,39 @@
     const engToggle = document.getElementById('engMode');
     const schemeSelect = document.getElementById('schemeSelect');
     const vKeypad = document.getElementById('vKeypad');
+    const nudiControls = document.getElementById('nudiControls');
+    const keyboardContainer = document.getElementById('keyboard');
 
-    // --- 4. INIT ---
     initUI();
 
     function initUI() {
         const selected = schemeSelect.value;
         activeMap = schemes[selected];
-        
-        const aaGroup = document.getElementById('autoAnusvaraGroup');
-        if (aaGroup) aaGroup.style.display = (activeMap.name === "Sampurna") ? "flex" : "none";
+
+        if (activeMap.name.includes("Nudi")) {
+            nudiControls.style.display = "flex";
+            document.getElementById('autoAnusvaraGroup').style.display = "none";
+            renderKeyboard();
+        } else {
+            nudiControls.style.display = "none";
+            keyboardContainer.classList.remove('show');
+            document.getElementById('toggleKbdBtn').innerText = "Show On-Screen Keyboard";
+            const aaGroup = document.getElementById('autoAnusvaraGroup');
+            if (aaGroup) aaGroup.style.display = (activeMap.name === "Sampurna") ? "flex" : "none";
+        }
 
         const bk = activeMap.breakKey;
-        isBreakKeyPrefix = Object.keys(activeMap.consonants).some(k => k.startsWith(bk)) || 
-                           Object.keys(activeMap.specials).some(k => k.startsWith(bk));
+        isBreakKeyPrefix = bk ? (Object.keys(activeMap.consonants).some(k => k.startsWith(bk)) ||
+                                 (activeMap.specials && Object.keys(activeMap.specials).some(k => k.startsWith(bk)))) : false;
 
         updateHelpGrid();
         updateVirtualKeys();
         renderMemoryBar();
         editor.focus();
+        state = { lastInput: "", lastOutput: "", lastType: "" };
     }
 
-    function changeScheme() {
-        initUI();
-        showToast(`Switched to ${activeMap.name}`);
-        state.lastInput = "";
-    }
+    function changeScheme() { initUI(); showToast(`Switched to ${activeMap.name}`); }
 
     function changeFontSize(delta) {
         currentFontSize += delta;
@@ -376,7 +431,51 @@
         editor.focus();
     }
 
-    // --- MEMORY BAR FUNCTIONS ---
+    // --- NUDI RENDERER ---
+    function toggleKeyboard() {
+        const btn = document.getElementById('toggleKbdBtn');
+        const isShowing = keyboardContainer.classList.toggle('show');
+        btn.innerText = isShowing ? "Hide On-Screen Keyboard" : "Show On-Screen Keyboard";
+    }
+
+    function renderKeyboard() {
+        keyboardContainer.innerHTML = "";
+        kbdDefinition.forEach(rowInfo => {
+            const div = document.createElement('div');
+            div.className = `kbd-row row-${rowInfo.row}`;
+            if(rowInfo.row === 3) {
+                const sBtn = document.createElement('div');
+                sBtn.className = isShifted ? "key-cap shift-key active" : "key-cap shift-key";
+                sBtn.innerHTML = `SHIFT`;
+                sBtn.onclick = () => { isShifted = !isShifted; renderKeyboard(); };
+                div.appendChild(sBtn);
+            }
+            rowInfo.keys.forEach(key => {
+                const char = isShifted ? key.toUpperCase() : key.toLowerCase();
+                let glyph = char;
+                if(activeMap.consonants && activeMap.consonants[char]) glyph = activeMap.consonants[char];
+                else if(activeMap.vowels && activeMap.vowels[char]) glyph = activeMap.vowels[char];
+                if(char === 'f') glyph = '್';
+                const btn = document.createElement('div');
+                btn.className = "key-cap";
+                btn.innerHTML = `<span class="glyph">${glyph}</span><span class="key-label">${char}</span>`;
+                btn.onclick = () => handleVisualKeyClick(char);
+                div.appendChild(btn);
+            });
+            keyboardContainer.appendChild(div);
+        });
+    }
+
+    function handleVisualKeyClick(char) {
+        const start = editor.selectionStart;
+        const current = editor.value;
+        editor.value = current.slice(0, start) + char + current.slice(start);
+        editor.focus();
+        editor.setSelectionRange(start + 1, start + 1);
+        processVisualInput(char, start + 1);
+    }
+
+    // --- MEMORY ---
     function renderMemoryBar() {
         const bar = document.getElementById('memoryBar');
         bar.innerHTML = "";
@@ -384,18 +483,11 @@
             const num = idx + 1;
             const btn = document.createElement('div');
             btn.className = text ? "mem-slot" : "mem-slot empty";
-            
             if(text) btn.title = `Saved: "${text}"\nClick or press Alt+${num} to insert.`;
             else btn.title = `Empty Slot ${num}\nSelect text and press Ctrl+Alt+${num} to save.`;
-            
             let displayTxt = text ? (text.length > 15 ? text.substring(0,12)+"..." : text) : "Empty";
-            
             btn.innerHTML = `<span class="mem-shortcut">Alt+${num}</span> <span>${displayTxt}</span>`;
-            
-            btn.onclick = () => {
-                if(text) insertPhrase(idx);
-                else showToast(`Select text & Press Ctrl+Alt+${num} to save`);
-            };
+            btn.onclick = () => { if(text) insertPhrase(idx); else showToast(`Select text & Press Ctrl+Alt+${num} to save`); };
             bar.appendChild(btn);
         });
     }
@@ -403,92 +495,84 @@
     function savePhrase(idx) {
         const start = editor.selectionStart;
         const end = editor.selectionEnd;
-        if (start === end) {
-            showToast("No text selected to save!");
-            return;
-        }
-        const text = editor.value.substring(start, end);
-        phraseMemory[idx] = text;
+        if (start === end) { showToast("No text selected to save!"); return; }
+        phraseMemory[idx] = editor.value.substring(start, end);
         renderMemoryBar();
         showToast(`Phrase saved to Slot ${idx+1}`);
     }
 
     function insertPhrase(idx) {
-        const text = phraseMemory[idx];
-        if (!text) {
-            showToast(`Slot ${idx+1} is empty! Use Ctrl+Alt+${idx+1} to save.`);
-            return;
-        }
-        insertDirect(text); 
+        if (!phraseMemory[idx]) { showToast(`Slot ${idx+1} is empty!`); return; }
+        insertDirect(phraseMemory[idx]);
         showToast(`Inserted phrase from Slot ${idx+1}`);
     }
 
     function updateVirtualKeys() {
         vKeypad.innerHTML = "";
-        
-        // Break Key
-        const btnB = document.createElement('button');
-        btnB.className = "v-btn control";
-        btnB.innerHTML = (activeMap.breakKey || "~") + " <small>[Break]</small>";
-        btnB.title = "k=ha → ಕ್ಹ";
-        btnB.onclick = () => insertChar(activeMap.breakKey || "~");
-        vKeypad.appendChild(btnB);
+        if (!activeMap.isVisual) {
+            const btnB = document.createElement('button');
+            btnB.className = "v-btn control";
 
-        // ZWJ Key
-        const btnZ = document.createElement('button');
-        btnZ.className = "v-btn control";
-        btnZ.innerHTML = activeMap.zwjKey + " <small>[ZWJ]</small>";
-        btnZ.title = "rxya → ರ‍್ಯ, Axypal → ಆ್ಯಪಲ್";
-        btnZ.onclick = () => insertChar(activeMap.zwjKey);
-        vKeypad.appendChild(btnZ);
+            // Customize Label based on scheme
+            let label = activeMap.name === "Sampurna" ? "=" : "~";
+            let labelDesc = activeMap.name === "Sampurna" ? "Break" : "Halant Break";
+            btnB.innerHTML = label + ` <small>[${labelDesc}]</small>`;
+            btnB.onclick = () => insertChar(label);
+            vKeypad.appendChild(btnB);
 
-        // Force Halant (Sampurna only)
-        if(activeMap.forceHalantKey) {
-            const btnFH = document.createElement('button');
-            btnFH.className = "v-btn control";
-            btnFH.innerHTML = activeMap.forceHalantKey + " <small>[Halant]</small>";
-            btnFH.title = "r^ShA → ರ್‌ಷಾ";
-            btnFH.onclick = () => insertChar(activeMap.forceHalantKey);
-            vKeypad.appendChild(btnFH);
+            if(activeMap.forceHalantKey && activeMap.name === "Sampurna") {
+                const btnH = document.createElement('button');
+                btnH.className = "v-btn control";
+                btnH.innerHTML = activeMap.forceHalantKey + " <small>[Force Halant]</small>";
+                btnH.onclick = () => insertChar(activeMap.forceHalantKey);
+                vKeypad.appendChild(btnH);
+            }
+
+            const btnZ = document.createElement('button');
+            btnZ.className = "v-btn control";
+            btnZ.innerHTML = activeMap.zwjKey + " <small>[ZWJ]</small>";
+            btnZ.onclick = () => insertChar(activeMap.zwjKey);
+            vKeypad.appendChild(btnZ);
         }
-
-        activeMap.buttons.forEach(char => {
-            const btn = document.createElement('button');
-            btn.className = "v-btn";
-            let display = char.replace(ZWNJ, '').replace(ZWJ, '');
-            if(['॒','॑','᳚','ꣳ','ಽ'].includes(display)) btn.className += " vedic";
-            
-            btn.innerText = display;
-            btn.onclick = () => insertDirect(char);
-            vKeypad.appendChild(btn);
-        });
+        if(activeMap.buttons) {
+            activeMap.buttons.forEach(char => {
+                const btn = document.createElement('button');
+                btn.className = "v-btn";
+                let display = char.replace(ZWNJ, '').replace(ZWJ, '');
+                if(['॒','॑','᳚','ꣳ','ಽ'].includes(display)) btn.className += " vedic";
+                btn.innerText = display;
+                btn.onclick = () => insertDirect(char);
+                vKeypad.appendChild(btn);
+            });
+        }
     }
 
     function updateHelpGrid() {
         const grid = document.getElementById('helpGrid'); grid.innerHTML = "";
-        activeMap.help.forEach(section => {
-            let html = `<div class="help-box"><h3>${section.title}</h3>`;
-            section.rows.forEach(row => html += `<div class="row"><span class="key">${row[0]}</span> <span class="val">${row[1]}</span></div>`);
-            html += `</div>`; grid.innerHTML += html;
-        });
+        if(activeMap.help) {
+            activeMap.help.forEach(section => {
+                let html = `<div class="help-box"><h3>${section.title}</h3>`;
+                section.rows.forEach(row => html += `<div class="row"><span class="key">${row[0]}</span> <span class="val">${row[1]}</span></div>`);
+                html += `</div>`; grid.innerHTML += html;
+            });
+        }
         grid.innerHTML += `<div class="help-box"><h3>Shortcuts</h3>
-            <div class="row"><span class="key">Alt+A</span> <span>Auto Anusvara</span></div>
+            ${!activeMap.isVisual ? '<div class="row"><span class="key">Alt+A</span> <span>Auto Anusvara</span></div>' : ''}
             <div class="row"><span class="key">Alt+M</span> <span>Mantra</span></div>
             <div class="row"><span class="key">Alt+N</span> <span>Numbers</span></div>
             <div class="row"><span class="key">Alt+E</span> <span>English</span></div></div>`;
     }
 
-    // --- 5. ENGINE ---
-    
+    // --- ENGINE ---
     function insertChar(char) {
-        if (char === activeMap.breakKey && !isBreakKeyPrefix) { handleBreak(); return; } 
-        if (char === activeMap.forceHalantKey) { handleForceHalant(); return; }
+        if (char === activeMap.breakKey && !isBreakKeyPrefix) { handleBreak(); return; }
         const start = editor.selectionStart;
         const current = editor.value;
         editor.value = current.slice(0, start) + char + current.slice(start);
         editor.focus();
         editor.setSelectionRange(start + char.length, start + char.length);
-        processInput(char, start + char.length);
+        if (activeMap.isVisual) processVisualInput(char, start + char.length);
+        else processPhoneticInput(char, start + char.length);
     }
 
     function insertDirect(char) {
@@ -497,7 +581,7 @@
         editor.value = current.slice(0, start) + char + current.slice(start);
         editor.focus();
         editor.setSelectionRange(start + char.length, start + char.length);
-        state.lastInput = ""; 
+        state.lastInput = "";
     }
 
     function handleBreak() {
@@ -505,197 +589,161 @@
         state.lastInput = ""; state.lastOutput = ""; state.lastType = "";
     }
 
-    function handleForceHalant() {
-        const start = editor.selectionStart;
-        const current = editor.value;
-        editor.value = current.slice(0, start) + ZWNJ + current.slice(start);
-        editor.focus();
-        const newPos = start + 1; 
-        editor.setSelectionRange(newPos, newPos);
-        state.lastInput = ""; state.lastOutput = ""; state.lastType = "";
-    }
-
     editor.addEventListener('keydown', (e) => {
-        if (e.altKey && !e.ctrlKey && !e.shiftKey) {
-            if (e.key >= '1' && e.key <= '5') {
-                e.preventDefault();
-                insertPhrase(parseInt(e.key) - 1);
-                return;
-            }
-        }
-        if (e.altKey && e.ctrlKey) {
-            if (e.key >= '1' && e.key <= '5') {
-                e.preventDefault();
-                savePhrase(parseInt(e.key) - 1);
-                return;
-            }
-        }
-
+        if (e.key === 'Shift') { isShifted = true; if(activeMap.isVisual) renderKeyboard(); }
         if (e.altKey) {
+            if (e.key >= '1' && e.key <= '5') {
+                e.preventDefault();
+                if(e.ctrlKey) savePhrase(parseInt(e.key) - 1);
+                else insertPhrase(parseInt(e.key) - 1);
+                return;
+            }
             let changed = false; let msg = "";
             if (e.key.toLowerCase() === 'e') { engToggle.checked = !engToggle.checked; msg = engToggle.checked ? "Eng ON" : "Eng OFF"; changed = true; }
             else if (e.key.toLowerCase() === 'm') { mantraToggle.checked = !mantraToggle.checked; msg = mantraToggle.checked ? "Mantra ON" : "Mantra OFF"; changed = true; }
             else if (e.key.toLowerCase() === 'n') { numToggle.checked = !numToggle.checked; msg = numToggle.checked ? "Num ON" : "Num OFF"; changed = true; }
-            else if (e.key.toLowerCase() === 'a') { autoAnusvaraToggle.checked = !autoAnusvaraToggle.checked; msg = autoAnusvaraToggle.checked ? "Auto Anusvara ON" : "Auto Anusvara OFF"; changed = true; }
+            else if (e.key.toLowerCase() === 'a' && !activeMap.isVisual) { autoAnusvaraToggle.checked = !autoAnusvaraToggle.checked; msg = autoAnusvaraToggle.checked ? "Auto Anusvara ON" : "Auto Anusvara OFF"; changed = true; }
             else if (e.key === '/') { openMapModal(); return; }
             if (changed) { e.preventDefault(); showToast(msg); state.lastInput = ""; return; }
         }
-        
-        if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') {
-            return; 
-        }
-
-        if (e.key.length > 1 && e.key !== 'Backspace') state.lastInput = "";
+        if (!activeMap.isVisual && e.key.length > 1 && e.key !== 'Backspace' && !e.shiftKey && !e.ctrlKey) state.lastInput = "";
         if (e.key === 'Backspace') state.lastInput = "";
     });
 
+    editor.addEventListener('keyup', (e) => { if (e.key === 'Shift') { isShifted = false; if(activeMap.isVisual) renderKeyboard(); } });
+
     editor.addEventListener('input', (e) => {
-        if (e.inputType === 'insertFromPaste') {
-            state.lastInput = ""; 
-            return; 
-        }
-
+        if (e.inputType === 'insertFromPaste') { state.lastInput = ""; return; }
         if (engToggle.checked) { state.lastInput = ""; return; }
-        if (e.inputType === 'deleteContentBackward') return;
-        
+        if (e.inputType === 'deleteContentBackward') { if(activeMap.isVisual) { state.lastType = ""; state.lastInput = ""; } return; }
         const start = editor.selectionStart;
-        const current = editor.value;
-        const charTyped = current.substring(start - 1, start);
+        const charTyped = editor.value.substring(start - 1, start);
         if (!charTyped) return;
-
-        processInput(charTyped, start);
+        if (activeMap.isVisual) processVisualInput(charTyped, start);
+        else processPhoneticInput(charTyped, start);
     });
 
-    function processInput(charTyped, cursorPos) {
+    function processVisualInput(char, cursorPos) {
+        let processed = false, output = "", type = "", deleteCount = 1;
+        if (numToggle.checked && commonNumbers[char]) { applyToEditor(cursorPos, 1, commonNumbers[char], 'number', char); return; }
+        if (mantraToggle.checked && activeMap.mantra && activeMap.mantra[char]) { applyToEditor(cursorPos, 1, specialChars[activeMap.mantra[char]]||activeMap.mantra[char], 'special', char); return; }
+        if (char === 'f' && state.lastInput === 'f') { applyToEditor(cursorPos, 1, ZWNJ, 'special', 'ff'); return; }
+        if (char === 'F' && state.lastType === 'consonant') { output = (state.lastInput === 'r') ? ZWJ + VIRAMA : VIRAMA + "ರ"; applyToEditor(cursorPos, 1, output, 'consonant', 'F'); return; }
+
+        if (activeMap.consonants[char]) { output = activeMap.consonants[char]; type = 'consonant'; processed = true; }
+        else if (activeMap.vowels[char]) {
+            if (state.lastType === 'consonant') { output = activeMap.matras[char] || ""; type = 'matra'; }
+            else { output = activeMap.vowels[char]; type = 'vowel'; }
+            processed = true;
+        }
+
+        if (processed && output !== undefined) applyToEditor(cursorPos, deleteCount, output, type, char);
+        else { state.lastInput = char; state.lastType = 'english'; }
+    }
+
+    function processPhoneticInput(charTyped, cursorPos) {
+        // 1. PREFIX BREAK LOGIC (Baraha ~)
+        // Checks if previous char was a break key that fell through (like ~ in Baraha)
         if (isBreakKeyPrefix && state.lastInput === activeMap.breakKey) {
             const combo = state.lastInput + charTyped;
-            const isValid = activeMap.consonants[combo] || activeMap.specials[combo] || activeMap.vowels[combo];
-            
+            const isValid = activeMap.consonants[combo] || (activeMap.specials && activeMap.specials[combo]) || activeMap.vowels[combo];
+
             if (!isValid) {
-                applyToEditor(cursorPos - 1, 1, ZWNJ, 'special', ""); 
-                state.lastInput = ""; 
+                // EXPLICIT BARAHA LOGIC: Replace ~ with ZWNJ (Halant Non-Joiner)
+                // Delete the prefix char (~ at cursorPos-2)
+                applyToEditor(cursorPos - 1, 1, ZWNJ, 'special', "");
+
+                // Shift cursor back because we removed a character?
+                // Wait: Removed 1 char (~). Added 1 char (ZWNJ). Length same.
+                // But text selection might have shifted.
+                // Resetting logic.
+                // oldText:  ...k~h
+                // newText:  ...k[ZWNJ]h
+                // Cursor was after h. Should still be after h.
+                // applyToEditor updates editor value and sets cursor.
+                // But it assumes we are inserting 'output' at 'cursorPos - deleteCount'.
+                // Here we called applyToEditor(cursorPos - 1, 1, ZWNJ, ...)
+                // This means at (cursorPos - 1), delete 1 char (~), insert ZWNJ.
+                // The 'h' (charTyped) is AFTER this position. It remains untouched.
+
+                state.lastInput = ""; // Reset so 'h' is fresh
+                // Do NOT return. Fall through to process the current 'charTyped' as a fresh letter.
             }
         }
 
-        if (!isBreakKeyPrefix && charTyped === activeMap.breakKey) {
-            applyToEditor(cursorPos, 1, "", 'special', ""); 
-            state.lastInput = ""; 
-            return;
-        }
-
+        // 2. EXPLICIT FORCE HALANT (Sampurna ^)
         if (activeMap.forceHalantKey && charTyped === activeMap.forceHalantKey) {
             applyToEditor(cursorPos, 1, ZWNJ, 'special', ""); return;
         }
 
+        // 3. EXPLICIT SOFT BREAK (Sampurna =)
+        if (!isBreakKeyPrefix && charTyped === activeMap.breakKey) {
+            applyToEditor(cursorPos, 1, "", 'special', "");
+            state.lastInput = "";
+            return;
+        }
+
         if (activeMap.name === "Sampurna" && autoAnusvaraToggle.checked && activeMap.consonants[charTyped]) {
             let prevKey = state.lastInput;
-            
-            if ( (prevKey === 'n' && autoAnusvaraTriggers['n'].includes(charTyped)) || 
+            if ( (prevKey === 'n' && autoAnusvaraTriggers['n'].includes(charTyped)) ||
                  (prevKey === 'm' && autoAnusvaraTriggers['m'].includes(charTyped) && charTyped !== 'm') ) {
-                
-                const prePos = cursorPos - 1; 
-                applyToEditor(prePos, 2, "ಂ", 'special', ""); 
-                cursorPos = cursorPos - 1;
+                applyToEditor(cursorPos - 1, 2, "ಂ", 'special', ""); cursorPos = cursorPos - 1;
             }
         }
 
-        let processed = false; let output = ""; let type = ""; let newKeyString = charTyped; let deleteCount = 1;
+        let processed = false, output = "", type = "", newKeyString = charTyped, deleteCount = 1;
 
-        // --- STEP 5: ZWJ / FORCE VOTTU ---
         if (charTyped === activeMap.zwjKey) {
             const current = editor.value;
-            const beforeChar = current.substring(cursorPos - 2, cursorPos - 1); 
-            
+            const beforeChar = current.substring(cursorPos - 2, cursorPos - 1);
             if (state.lastType === 'consonant' || beforeChar === VIRAMA) {
-                deleteCount = 2; output = ZWJ + VIRAMA; type = 'consonant'; 
-                processed = true; state.lastInput = ""; 
-                applyToEditor(cursorPos, deleteCount, output, type, ""); return;
-            }
-            
-            // Case 2: After Vowel (Force Vottakshara on Vowel)
-            else if (state.lastType === 'vowel' || state.lastType === 'matra') {
-                deleteCount = 1; // Delete 'x'
-                output = VIRAMA; 
-                type = 'vowel_halant'; // Special state
-                processed = true; 
-                state.lastInput = ""; 
-                applyToEditor(cursorPos, deleteCount, output, type, ""); return;
+                applyToEditor(cursorPos, 2, ZWJ + VIRAMA, 'consonant', ""); return;
+            } else if (state.lastType === 'vowel' || state.lastType === 'matra') {
+                applyToEditor(cursorPos, 1, VIRAMA, 'vowel_halant', ""); return;
             }
         }
 
         if (!processed && numToggle.checked && commonNumbers[charTyped]) { output = commonNumbers[charTyped]; type = 'number'; processed = true; }
-
         else if (!processed && state.lastInput) {
             const potentialMerge = state.lastInput + charTyped;
-            
-            if (activeMap.specials[potentialMerge]) {
-                deleteCount = state.lastOutput.length + 1; 
-                output = specialChars[activeMap.specials[potentialMerge]] || activeMap.specials[potentialMerge]; 
+            if (activeMap.specials && activeMap.specials[potentialMerge]) {
+                deleteCount = state.lastOutput.length + 1; output = specialChars[activeMap.specials[potentialMerge]] || activeMap.specials[potentialMerge];
                 newKeyString = potentialMerge; type = 'special'; processed = true;
-            }
-            else if (activeMap.consonants[potentialMerge]) {
+            } else if (activeMap.consonants[potentialMerge]) {
                 deleteCount = state.lastOutput.length + 1; output = activeMap.consonants[potentialMerge]; newKeyString = potentialMerge; type = 'consonant'; processed = true;
-            }
-            else if (activeMap.vowels[potentialMerge] || activeMap.matras[potentialMerge]) {
+            } else if (activeMap.vowels[potentialMerge] || activeMap.matras[potentialMerge]) {
                 if (state.lastType === 'matra' || state.lastType === 'vowel') {
                     let newOutput = (state.lastType === 'matra') ? activeMap.matras[potentialMerge] : activeMap.vowels[potentialMerge];
                     if (newOutput !== undefined) { deleteCount = state.lastOutput.length + 1; output = newOutput; newKeyString = potentialMerge; type = state.lastType; processed = true; }
                 }
-            }
-            else if (mantraToggle.checked && activeMap.mantra && activeMap.mantra[potentialMerge]) {
-                deleteCount = state.lastOutput.length + 1; 
-                const val = activeMap.mantra[potentialMerge];
-                output = specialChars[val] || val; 
+            } else if (mantraToggle.checked && activeMap.mantra && activeMap.mantra[potentialMerge]) {
+                deleteCount = state.lastOutput.length + 1; output = specialChars[activeMap.mantra[potentialMerge]] || activeMap.mantra[potentialMerge];
                 newKeyString = potentialMerge; type = 'special'; processed = true;
-            }
-            else if (mantraToggle.checked && mantraSpecial[potentialMerge]) {
+            } else if (mantraToggle.checked && mantraSpecial[potentialMerge]) {
                 deleteCount = state.lastOutput.length + 1; output = mantraSpecial[potentialMerge]; newKeyString = potentialMerge; type = 'special'; processed = true;
             }
         }
 
         if (!processed) {
-            if (mantraToggle.checked && (activeMap.mantra && activeMap.mantra[charTyped] || mantraSpecial[charTyped])) { 
-                const val = (activeMap.mantra && activeMap.mantra[charTyped]);
-                output = val ? (specialChars[val] || val) : mantraSpecial[charTyped];
-                type = 'special'; processed = true; 
-            }
-            else if (activeMap.specials[charTyped]) { 
-                output = specialChars[activeMap.specials[charTyped]] || activeMap.specials[charTyped]; 
-                type = 'special'; processed = true; 
-            }
-            else if (activeMap.consonants[charTyped]) { 
-                output = activeMap.consonants[charTyped]; 
-                type = 'consonant'; 
-                
-                // FORCE VOTTU FIX: If previous was vowel+halant, treat this consonant as Vottu (remove trailing Virama)
-                if (state.lastType === 'vowel_halant' && output.endsWith(VIRAMA)) {
-                    output = output.slice(0, -1);
-                    type = 'vowel'; // Treat result as base
-                }
-                
-                processed = true; 
-            }
-            else if (activeMap.vowels[charTyped]) {
+            if (mantraToggle.checked && (activeMap.mantra && activeMap.mantra[charTyped] || mantraSpecial[charTyped])) {
+                const val = (activeMap.mantra && activeMap.mantra[charTyped]); output = val ? (specialChars[val] || val) : mantraSpecial[charTyped]; type = 'special'; processed = true;
+            } else if (activeMap.specials && activeMap.specials[charTyped]) {
+                output = specialChars[activeMap.specials[charTyped]] || activeMap.specials[charTyped]; type = 'special'; processed = true;
+            } else if (activeMap.consonants[charTyped]) {
+                output = activeMap.consonants[charTyped]; type = 'consonant';
+                if (state.lastType === 'vowel_halant' && output.endsWith(VIRAMA)) { output = output.slice(0, -1); type = 'vowel'; }
+                processed = true;
+            } else if (activeMap.vowels[charTyped]) {
                 const current = editor.value;
                 const beforeTyped = current.substring(cursorPos - 2, cursorPos - 1);
-                
-                if (beforeTyped === VIRAMA && activeMap.matras[charTyped] !== undefined) { 
-                    deleteCount = 2; output = activeMap.matras[charTyped]; type = 'matra'; 
-                } 
-                else { 
-                    output = activeMap.vowels[charTyped]; type = 'vowel'; 
-                }
+                if (beforeTyped === VIRAMA && activeMap.matras[charTyped] !== undefined) { deleteCount = 2; output = activeMap.matras[charTyped]; type = 'matra'; }
+                else { output = activeMap.vowels[charTyped]; type = 'vowel'; }
                 processed = true;
             }
         }
 
-        if (processed && output !== undefined) {
-            applyToEditor(cursorPos, deleteCount, output, type, newKeyString);
-        } else {
-            state.lastInput = charTyped; 
-            state.lastOutput = charTyped; 
-            state.lastType = 'english'; 
-        }
+        if (processed && output !== undefined) applyToEditor(cursorPos, deleteCount, output, type, newKeyString);
+        else { state.lastInput = charTyped; state.lastOutput = charTyped; state.lastType = 'english'; }
     }
 
     function applyToEditor(cursorPos, deleteCount, output, type, keyString) {
@@ -708,69 +756,52 @@
         state.lastInput = keyString; state.lastOutput = output; state.lastType = type;
     }
 
-    // --- MODAL & TOAST ---
+    // --- UTILS ---
     function showToast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.className = "show"; setTimeout(() => t.className = "", 2000); }
-    
-    // Map Modal
     function openMapModal() { generateMapTable(); document.getElementById('fullMapModal').style.display = 'flex'; }
     function closeMapModal() { document.getElementById('fullMapModal').style.display = 'none'; editor.focus(); }
-    
-    // Emoji Modal
-    function openEmojiModal() { 
+    function openEmojiModal() {
         const container = document.getElementById('emojiContainer');
         if(container.innerHTML === "") {
             for(let cat in emojis) {
                 const div = document.createElement('div');
-                div.innerHTML = `<div class="emoji-cat">${cat}</div><div class="emoji-grid">
-                    ${emojis[cat].map(e => `<div class="emoji-item" onclick="insertDirect('${e}'); closeEmojiModal()">${e}</div>`).join('')}
-                </div>`;
+                div.innerHTML = `<div class="emoji-cat">${cat}</div><div class="emoji-grid">${emojis[cat].map(e => `<div class="emoji-item" onclick="insertDirect('${e}'); closeEmojiModal()">${e}</div>`).join('')}</div>`;
                 container.appendChild(div);
             }
         }
-        document.getElementById('emojiModal').style.display = 'flex'; 
+        document.getElementById('emojiModal').style.display = 'flex';
     }
     function closeEmojiModal() { document.getElementById('emojiModal').style.display = 'none'; editor.focus(); }
-
-    window.onclick = function(e) { 
-        if(e.target == document.getElementById('fullMapModal')) closeMapModal();
-        if(e.target == document.getElementById('emojiModal')) closeEmojiModal();
-    }
+    window.onclick = function(e) { if(e.target == document.getElementById('fullMapModal')) closeMapModal(); if(e.target == document.getElementById('emojiModal')) closeEmojiModal(); }
 
     function generateMapTable() {
-        const grid = document.getElementById('modalMapGrid'); 
-        grid.innerHTML = "";
-        const title = document.getElementById('mapTitle'); 
-        title.innerText = activeMap.name + " Complete Mapping";
-
+        const grid = document.getElementById('modalMapGrid'); grid.innerHTML = "";
+        document.getElementById('mapTitle').innerText = activeMap.name + " Complete Mapping";
         const createSection = (name, dataObj, isControl = false) => {
-            if (Object.keys(dataObj).length === 0) return;
+            if (!dataObj || Object.keys(dataObj).length === 0) return;
             const div = document.createElement('div');
             let html = `<h3>${name}</h3><table class="map-table"><tr><th>Key</th><th>${isControl ? "Action / Result" : "Symbol"}</th></tr>`;
             for (let k in dataObj) {
                 let val = dataObj[k];
                 if (specialChars[val]) val = specialChars[val];
                 let displayVal = val.replace(ZWNJ, '').replace(ZWJ, '');
-                if (isControl) displayVal = val; 
+                if (isControl) displayVal = val;
                 if (displayVal === "" && val.includes(ZWJ)) displayVal = "ZWJ (Joiner)";
-                if (displayVal === "" && val.includes(ZWNJ)) displayVal = "ZWNJ (Non-Joiner)";
+                if (displayVal === "" && val.includes(ZWNJ)) displayVal = "ZWNJ (Force Halant)";
                 html += `<tr><td style="font-family:monospace; color:#bf360c; font-weight:bold; font-size:14px;">${k}</td><td style="font-family:'Noto Sans Kannada', sans-serif; font-size:16px;">${displayVal}</td></tr>`;
             }
             html += `</table>`; div.innerHTML = html; grid.appendChild(div);
         };
-
         let controls = {};
-        if (activeMap.name === "Sampurna") {
-            controls = { "=": "Soft Break (k=ha → ಕ್ಹ)", "^": "Force Halant (r^ShA → ರ್‌ಷಾ)", "x": "ZWJ (rxya → ರ‍್ಯ)" };
-        } else {
-            controls = { "~": "Soft Break (rAj~kumAr)", "^": "ZWJ (Joiner)", "~g": "Nga (ಙ)", "~j": "Nya (ಞ)" };
-        }
+        if (activeMap.name === "Sampurna") controls = { "=": "Soft Break (ಕ್ಹ)", "^": "Force Halant (ಕ್‌ಹ)", "x": "ZWJ" };
+        else if (activeMap.name === "Baraha") controls = { "~": "Halant Non-Joiner (ಕ್‌ಹ)", "^": "ZWJ (Joiner)", "~g": "Nga", "~j": "Nya" };
+        else controls = { "f": "Virama (್)", "F": "Arkavottu (೯)" };
         createSection("Control & Special Rules", controls, true);
         createSection("Vowels", activeMap.vowels);
         createSection("Matras", activeMap.matras);
         createSection("Consonants", activeMap.consonants);
-        const combinedSpecials = { ...commonNumbers, ...activeMap.specials };
-        if(!combinedSpecials["|"]) combinedSpecials["|"] = "।";
-        if(!combinedSpecials["||"]) combinedSpecials["||"] = "॥";
+        const combinedSpecials = { ...commonNumbers, ...(activeMap.specials || {}) };
+        if(!combinedSpecials["|"]) combinedSpecials["|"] = "।"; if(!combinedSpecials["||"]) combinedSpecials["||"] = "॥";
         createSection("Numbers & Punctuation", combinedSpecials);
         if (mantraToggle.checked) {
             const mergedMantra = { ...mantraSpecial, ...(activeMap.mantra || {}) };
@@ -782,5 +813,6 @@
     function copyText() { editor.select(); document.execCommand('copy'); showToast("Copied!"); }
     function clearText() { if(confirm('Clear?')){ editor.value=''; state.lastInput=''; } }
 </script>
+
 </body>
 </html>
