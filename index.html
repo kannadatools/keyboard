@@ -318,11 +318,12 @@
                 "z": NUKTA
             },
             specials: { 
-                "|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda", "OM": "om" 
+                "OM": "om" 
             },
             mantra: { 
                 "/": "anudatta", "\'": "udatta", "\"": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha",
-                "C" : "೧॒॑", "V" : "೨॒॑", "B" : "೩॒॑"
+                "C" : "೧॒॑", "V" : "೨॒॑", "B" : "೩॒॑",
+				"|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda"
             },
             help: [
                 { title: "Control Keys", rows: [["=", "Soft Break (k=h -> ಕ್ಹ)"], ["^", "Force Halant (k^h -> ಕ್‌ಹ)"], ["x", "ZWJ (rxya → ರ‍್ಯ)"]] },
@@ -330,7 +331,7 @@
                 { title: "Specials / Punctuation", rows: [["M", "ಂ (ಅನುಸ್ವಾರ)"], ["MM", "ಁ (ಚಂದ್ರಬಿಂದು)"], ["H", "ಃ (ವಿಸರ್ಗ)"], ["OM", "ಓಂ"], ["|", "। (ದಂಡ)"], ["||", "॥ (2 ದಂಡ)"]] },
                 { title: "Special Consonants", rows: [["Rh", "ಱ (Rra)"], ["RH", "ೞ (Lla)"], ["z", " ಼ (NUKTA)"], ["f", "ಫ಼ (Fa)"], ["Z", "ಜ಼ (Za)"], ["Zh", "ಝ಼ (Za)"]] }
             ],
-            buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "಄", "ೱ", "ೲ", "U", "–", "।", "॥", "₹", "ಗ್ಂ"+ZWNJ, "ಗ್ಗ್"+ZWNJ, "ಀ", "ಁ", "ꣳ", "॒", "॑", "᳚", "ಽ" ]
+            buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "಄", "ೱ", "ೲ", "U", "–", "₹", "ಗ್ಂ"+ZWNJ, "ಗ್ಗ್"+ZWNJ, "ಀ", "ಁ", "।", "॥", "ꣳ", "॒", "॑", "᳚", "ಽ" ]
         },
         baraha: {
             name: "Baraha",
@@ -360,16 +361,15 @@
                 "f": "ಫ"+NUKTA+VIRAMA, "z": "ಜ"+NUKTA+VIRAMA 
             },
             specials: { 
-                "|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda",
                 "&": "avagraha", "Rs": "rupee", "OM": "om", "~M": "chandrabindu", "~lu": "ಌ" 
             },
-            mantra: { },
+            mantra: {"|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda"},
             help: [
                 { title: "Control Keys", rows: [["~", "Halant Non-Joiner (rAj~kumAr)"], ["^", "ZWJ (Joiner)"]] },
                 { title: "Nasal / Old Consonants", rows: [["~g", "ಙ (Nga)"], ["~j", "ಞ (Nya)"], ["rx", "ಱ (Rra)"], ["Lx", "ೞ (Lla)"]] },
                 { title: "Specials / Vedic", rows: [["~M", "ಁ (Chandrabindu)"], ["&", "ಽ (Avagraha)"], ["~lu", "ಌ (Vocalic L)"], ["Rs", "₹ (Rupee)"], ["OM", "ಓಂ"]] }
             ],
-            buttons: ["ಙ್", "ಞ್", "ಱ್", "ೞ್", "ಌ", "ೡ", "಄", "ೱ", "ೲ", "U", "–", "ಀ", "ಁ", "ಽ", "₹", "।", "॥", "ಗ್ಂ"+ZWNJ, "ಗ್ಗ್"+ZWNJ, "ꣳ", "॒", "॑", "᳚"]
+            buttons: ["ಙ್", "ಞ್", "ಱ್", "ೞ್", "ಌ", "ೡ", "಄", "ೱ", "ೲ", "U", "–", "ಀ", "ಁ", "ಽ", "₹", "ಗ್ಂ"+ZWNJ, "ಗ್ಗ್"+ZWNJ, "।", "॥", "ꣳ", "॒", "॑", "᳚"]
         },
         nudi: {
             name: "Nudi 6.1 (Visual)",
@@ -378,13 +378,15 @@
             matras: { "a":"","A":"ಾ","i":"ಿ","I":"ೀ","u":"ು","U":"ೂ","R":"ೃ","e":"ೆ","E":"ೇ","Y":"ೈ","o":"ೊ","O":"ೋ","V":"ೌ","M":"ಂ","H":"ಃ" },
             consonants: { "k":"ಕ","K":"ಖ","g":"ಗ","G":"ಘ","z":"ಞ","c":"ಚ","C":"ಛ","j":"ಜ","J":"ಝ","Z":"ಙ","q":"ಟ","Q":"ಠ","w":"ಡ","W":"ಢ","N":"ಣ","t":"ತ","T":"ಥ","d":"ದ","D":"ಧ","n":"ನ","p":"ಪ","P":"ಫ","b":"ಬ","B":"ಭ","m":"ಮ","y":"ಯ","r":"ರ","l":"ಲ","v":"ವ","S":"ಶ","x":"ಷ","s":"ಸ","h":"ಹ","L":"ಳ","f":VIRAMA },
             specials: { "|": "danda", "||": "ddanda" },
-            mantra: { "/": "anudatta", "\'": "udatta", "\"": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha" },
+            mantra: { 
+				"/": "anudatta", "\'": "udatta", "\"": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha", "|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda",
+			},
             help: [
                 { title: "Visual Mode", rows: [["f", "Virama/Vottu"], ["F", "Arkavattu/R-Vottu"]] },
                 { title: "Nukta / Ligatures", rows: [["X", "Nukta / rX=ಱ, RX=ೠ, LX=ೞ"]] },
                 { title: "Consonants", rows: [["z", "ಞ (Nya)"], ["Z", "ಙ (Nga)"]] }
             ],
-            buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "಄", "ೱ", "ೲ", "U", "–", "ಀ", "ಁ", "ಽ", "₹", "।", "॥", "ಗ್ಂ"+ZWNJ, "ಗ್ಗ್"+ZWNJ, "॒", "॑", "᳚", "ಽ"]
+            buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "಄", "ೱ", "ೲ", "U", "–", "ಀ", "ಁ", "₹", "ಗ್ಂ"+ZWNJ, "ಗ್ಗ್"+ZWNJ, "।", "॥", "॒", "॑", "᳚", "ಽ"]
         }
     };
 
@@ -558,7 +560,7 @@
                 const btn = document.createElement('button');
                 btn.className = "v-btn";
                 let display = char.replace(ZWNJ, '').replace(ZWJ, '');
-                if(['॒','॑','᳚','ꣳ','ಽ'].includes(display)) btn.className += " vedic";
+                if(['।', '॥', '॒','॑','᳚','ꣳ','ಽ'].includes(display)) btn.className += " vedic";
                 btn.innerText = display;
                 btn.onclick = () => insertDirect(char);
                 vKeypad.appendChild(btn);
@@ -692,7 +694,6 @@
         if (!activeMap.isVisual && e.key.length > 1 && e.key !== 'Backspace' && !e.shiftKey && !e.ctrlKey) state.lastInput = "";
         if (e.key === 'Backspace') state.lastInput = "";
     });
-
 
     editor.addEventListener('keyup', (e) => { if (e.key === 'Shift') { isShifted = false; if(activeMap.isVisual) renderKeyboard(); } });
 
