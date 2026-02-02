@@ -608,8 +608,72 @@
         state.lastInput = ""; state.lastOutput = ""; state.lastType = "";
     }
 
-    editor.addEventListener('keydown', (e) => {
+	editor.addEventListener('keydown', (e) => {
         if (e.key === 'Shift') { isShifted = true; if(activeMap.isVisual) renderKeyboard(); }
+
+        // --- SAMPURNA SMART BACKSPACE LOGIC ---
+        if (e.key === 'Backspace' && activeMap.name === "Sampurna" && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+            const start = editor.selectionStart;
+            // Only apply if cursor is singular (no text selection) and not at start
+            if (start === editor.selectionEnd && start > 0) {
+                const val = editor.value;
+                const char1 = val.substring(start - 1, start);     // Char before cursor
+                const char2 = (start > 1) ? val.substring(start - 2, start - 1) : null; // Char before that
+
+                // Helper: Is pure Consonant?
+                const isConsonant = (c) => {
+                     if(!c) return false;
+                     const code = c.charCodeAt(0);
+                     // Range: Ka(0C95)-Ha(0CB9), Rra(0CB1), Lla(0CDE)
+                     return (code >= 0x0C95 && code <= 0x0CB9) || code === 0x0CDE || code === 0x0CB1;
+                };
+
+                // Helper: Is Matra (Vowel Sign / Modifier)?
+                const isMatra = (c) => {
+                    if(!c) return false;
+                    const code = c.charCodeAt(0);
+                    // Matras (0xCBE-0xCCC), Anusvara/Visarga (0xC01-0xC03), Vedic/Others
+                    // Excludes Virama (0xCCD)
+                    return (code >= 0x0CBE && code <= 0x0CCC && code !== 0x0CCD) || 
+                           (code >= 0x0C01 && code <= 0x0C03) || 
+                           (code === 0x0CD5 || code === 0x0CD6);
+                };
+
+                // SCENARIO 1: [Consonant] + [Virama] (e.g. ಕ್) -> Delete Entire Letter
+                if (char1 === VIRAMA && isConsonant(char2)) {
+                     e.preventDefault();
+                     const newVal = val.substring(0, start - 2) + val.substring(start);
+                     editor.value = newVal;
+                     editor.setSelectionRange(start - 2, start - 2);
+                     state.lastInput = ""; 
+                     return;
+                }
+
+                // SCENARIO 2: [Consonant] + [Matra] (e.g. ಕಾ, ಕಿ, ಕಂ) -> Revert to Halant (ಕ್)
+                if (isMatra(char1) && isConsonant(char2)) {
+                    e.preventDefault();
+                    // Replace Matra with Virama
+                    const newVal = val.substring(0, start - 1) + VIRAMA + val.substring(start);
+                    editor.value = newVal;
+                    editor.setSelectionRange(start, start); // Cursor stays at same index (1 char replaced by 1)
+                    state.lastInput = "";
+                    return;
+                }
+
+                // SCENARIO 3: [Consonant] (e.g. ಕ) -> Add Virama (ಕ್)
+                // This handles the "undoing" of the implicit 'a'
+                if (isConsonant(char1)) {
+                     e.preventDefault();
+                     const newVal = val.substring(0, start) + VIRAMA + val.substring(start);
+                     editor.value = newVal;
+                     editor.setSelectionRange(start + 1, start + 1);
+                     state.lastInput = ""; 
+                     return;
+                }
+            }
+        }
+        // -------------------------------------
+
         if (e.altKey) {
             if (e.key >= '1' && e.key <= '5') {
                 e.preventDefault();
@@ -628,6 +692,7 @@
         if (!activeMap.isVisual && e.key.length > 1 && e.key !== 'Backspace' && !e.shiftKey && !e.ctrlKey) state.lastInput = "";
         if (e.key === 'Backspace') state.lastInput = "";
     });
+
 
     editor.addEventListener('keyup', (e) => { if (e.key === 'Shift') { isShifted = false; if(activeMap.isVisual) renderKeyboard(); } });
 
