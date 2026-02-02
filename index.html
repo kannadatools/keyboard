@@ -22,7 +22,7 @@
         }
         
         .container { 
-            max-width: 1200px; margin: 0 auto; background: var(--surface); 
+            max-width: 1800px; margin: 0 auto; background: var(--surface); 
             padding: 30px; border-radius: 16px; 
             box-shadow: 0 10px 30px rgba(251, 192, 45, 0.3); 
             border: 1px solid var(--accent);
@@ -31,10 +31,16 @@
         h1 { 
             color: var(--primary); margin-top: 0; font-size: 28px; 
             display: flex; align-items: center; gap: 10px; 
-            border-bottom: 3px solid var(--accent);
-            padding-bottom: 15px; margin-bottom: 25px;
+            padding-bottom: 2px; margin-bottom: 2px;
         }
         
+		.subtitle { 
+            color: var(--primary); margin-top: 0; font-size: 16px; 
+            display: flex; align-items: center; gap: 10px; 
+            padding-bottom: 10px; margin-bottom: 5px;
+        }
+
+		
         .toolbar { 
             background: #fff9c4; padding: 15px; border-radius: 12px; margin-bottom: 15px; 
             display: flex; gap: 20px; align-items: center; flex-wrap: wrap; 
@@ -181,7 +187,8 @@
 <body>
 
 <div class="container">
-    <h1>⌨️ Kannada Transliterator</h1>
+    <h1>⌨️ Kannada Keyboard (Transliterator)</h1>
+	<span class="subtitle" >Use Our custom Transliteration Scheme - ಸಂಪೂರ್ಣ  or ಬರಹ or ನುಡಿ (ಕಗಪ) key layout by selecting INPUT SCHEME</span>
 
     <div class="toolbar">
         <div class="control-group">
@@ -218,6 +225,7 @@
     </div>
 
     <div class="memory-bar" id="memoryBar"></div>
+
     <div class="nudi-controls" id="nudiControls">
         <button id="toggleKbdBtn" onclick="toggleKeyboard()" style="background:#fbc02d; color:#3e2723;">Show On-Screen Keyboard</button>
         <!--<span class="label" style="color:#bf360c;">Nudi Scheme Active</span> -->
@@ -411,7 +419,9 @@
     const nudiControls = document.getElementById('nudiControls');
     const keyboardContainer = document.getElementById('keyboard');
 
-    initUI();
+	// STARTUP
+    loadSettings(); // 1. Load saved preferences from LocalStorage
+    initUI();       // 2. Initialize UI based on those loaded settings
 
     function initUI() {
         const selected = schemeSelect.value;
@@ -438,9 +448,19 @@
         renderMemoryBar();
         editor.focus();
         state = { lastInput: "", lastOutput: "", lastType: "" };
+
+        // Attach Save triggers to toggles dynamically
+        // This ensures clicking the box saves the state immediately
+        autoAnusvaraToggle.onclick = saveSettings;
+        mantraToggle.onclick = saveSettings;
+        numToggle.onclick = saveSettings;
     }
 
-    function changeScheme() { initUI(); showToast(`Switched to ${activeMap.name}`); }
+    function changeScheme() { 
+        initUI(); 
+        saveSettings(); // Save new scheme selection
+        showToast(`Switched to ${activeMap.name}`); 
+    }
 
     function changeFontSize(delta) {
         currentFontSize += delta;
@@ -448,6 +468,42 @@
         if(currentFontSize > 60) currentFontSize = 60;
         editor.style.fontSize = currentFontSize + "px";
         editor.focus();
+        saveSettings(); // Save new font size
+    }
+
+    // --- LOCAL STORAGE SETTINGS MANAGER ---
+    function saveSettings() {
+        const settings = {
+            scheme: schemeSelect.value,
+            fontSize: currentFontSize,
+            autoAnusvara: autoAnusvaraToggle.checked,
+            mantra: mantraToggle.checked,
+            numbers: numToggle.checked,
+            memory: phraseMemory
+        };
+        try {
+            localStorage.setItem("kTransSettings", JSON.stringify(settings));
+        } catch (e) {
+            console.warn("Cannot save settings (likely file:// protocol restriction):", e);
+        }
+    }
+
+    function loadSettings() {
+        try {
+            const savedData = localStorage.getItem("kTransSettings");
+            if (savedData) {
+                const saved = JSON.parse(savedData);
+                if(saved.scheme && schemes[saved.scheme]) schemeSelect.value = saved.scheme;
+                if(saved.fontSize) { currentFontSize = saved.fontSize; editor.style.fontSize = currentFontSize + "px"; }
+                if(saved.memory) phraseMemory = saved.memory;
+                // Explicitly check for boolean values (true/false) not just existence
+                if(typeof saved.autoAnusvara === "boolean") autoAnusvaraToggle.checked = saved.autoAnusvara;
+                if(typeof saved.mantra === "boolean") mantraToggle.checked = saved.mantra;
+                if(typeof saved.numbers === "boolean") numToggle.checked = saved.numbers;
+            }
+        } catch(e) { 
+            console.log("Settings load error or fresh start:", e); 
+        }
     }
 
     // --- NUDI RENDERER ---
@@ -517,6 +573,7 @@
         if (start === end) { showToast("No text selected to save!"); return; }
         phraseMemory[idx] = editor.value.substring(start, end);
         renderMemoryBar();
+        saveSettings(); // Save on update
         showToast(`Phrase saved to Slot ${idx+1}`);
     }
 
@@ -609,38 +666,31 @@
         state.lastInput = ""; state.lastOutput = ""; state.lastType = "";
     }
 
-	editor.addEventListener('keydown', (e) => {
+    editor.addEventListener('keydown', (e) => {
         if (e.key === 'Shift') { isShifted = true; if(activeMap.isVisual) renderKeyboard(); }
 
         // --- SAMPURNA SMART BACKSPACE LOGIC ---
         if (e.key === 'Backspace' && activeMap.name === "Sampurna" && !e.ctrlKey && !e.altKey && !e.shiftKey) {
             const start = editor.selectionStart;
-            // Only apply if cursor is singular (no text selection) and not at start
             if (start === editor.selectionEnd && start > 0) {
                 const val = editor.value;
-                const char1 = val.substring(start - 1, start);     // Char before cursor
-                const char2 = (start > 1) ? val.substring(start - 2, start - 1) : null; // Char before that
+                const char1 = val.substring(start - 1, start);
+                const char2 = (start > 1) ? val.substring(start - 2, start - 1) : null;
 
-                // Helper: Is pure Consonant?
                 const isConsonant = (c) => {
                      if(!c) return false;
                      const code = c.charCodeAt(0);
-                     // Range: Ka(0C95)-Ha(0CB9), Rra(0CB1), Lla(0CDE)
                      return (code >= 0x0C95 && code <= 0x0CB9) || code === 0x0CDE || code === 0x0CB1;
                 };
-
-                // Helper: Is Matra (Vowel Sign / Modifier)?
                 const isMatra = (c) => {
                     if(!c) return false;
                     const code = c.charCodeAt(0);
-                    // Matras (0xCBE-0xCCC), Anusvara/Visarga (0xC01-0xC03), Vedic/Others
-                    // Excludes Virama (0xCCD)
                     return (code >= 0x0CBE && code <= 0x0CCC && code !== 0x0CCD) || 
                            (code >= 0x0C01 && code <= 0x0C03) || 
                            (code === 0x0CD5 || code === 0x0CD6);
                 };
 
-                // SCENARIO 1: [Consonant] + [Virama] (e.g. ಕ್) -> Delete Entire Letter
+                // 1. Delete Consonant + Virama
                 if (char1 === VIRAMA && isConsonant(char2)) {
                      e.preventDefault();
                      const newVal = val.substring(0, start - 2) + val.substring(start);
@@ -649,20 +699,16 @@
                      state.lastInput = ""; 
                      return;
                 }
-
-                // SCENARIO 2: [Consonant] + [Matra] (e.g. ಕಾ, ಕಿ, ಕಂ) -> Revert to Halant (ಕ್)
+                // 2. Revert Consonant + Matra -> Consonant + Virama
                 if (isMatra(char1) && isConsonant(char2)) {
                     e.preventDefault();
-                    // Replace Matra with Virama
                     const newVal = val.substring(0, start - 1) + VIRAMA + val.substring(start);
                     editor.value = newVal;
-                    editor.setSelectionRange(start, start); // Cursor stays at same index (1 char replaced by 1)
+                    editor.setSelectionRange(start, start);
                     state.lastInput = "";
                     return;
                 }
-
-                // SCENARIO 3: [Consonant] (e.g. ಕ) -> Add Virama (ಕ್)
-                // This handles the "undoing" of the implicit 'a'
+                // 3. Revert Consonant -> Consonant + Virama
                 if (isConsonant(char1)) {
                      e.preventDefault();
                      const newVal = val.substring(0, start) + VIRAMA + val.substring(start);
@@ -673,7 +719,6 @@
                 }
             }
         }
-        // -------------------------------------
 
         if (e.altKey) {
             if (e.key >= '1' && e.key <= '5') {
@@ -688,7 +733,14 @@
             else if (e.key.toLowerCase() === 'n') { numToggle.checked = !numToggle.checked; msg = numToggle.checked ? "Num ON" : "Num OFF"; changed = true; }
             else if (e.key.toLowerCase() === 'a' && !activeMap.isVisual) { autoAnusvaraToggle.checked = !autoAnusvaraToggle.checked; msg = autoAnusvaraToggle.checked ? "Auto Anusvara ON" : "Auto Anusvara OFF"; changed = true; }
             else if (e.key === '/') { openMapModal(); return; }
-            if (changed) { e.preventDefault(); showToast(msg); state.lastInput = ""; return; }
+            
+            if (changed) { 
+                e.preventDefault(); 
+                saveSettings(); // Save on toggle
+                showToast(msg); 
+                state.lastInput = ""; 
+                return; 
+            }
         }
         if (!activeMap.isVisual && e.key.length > 1 && e.key !== 'Backspace' && !e.shiftKey && !e.ctrlKey) state.lastInput = "";
         if (e.key === 'Backspace') state.lastInput = "";
@@ -714,27 +766,15 @@
         if (char === 'f' && state.lastInput === 'f') { applyToEditor(cursorPos, 1, ZWNJ, 'special', 'ff'); return; }
         if (char === 'F' && state.lastType === 'consonant') { output = (state.lastInput === 'r') ? ZWJ + VIRAMA : VIRAMA + "ರ"; applyToEditor(cursorPos, 1, output, 'consonant', 'F'); return; }
 
-		// SPECIAL NUDI X HANDLING (Nukta / Ligatures)
+        // SPECIAL NUDI X HANDLING
         if (activeMap.name.includes("Nudi") && char === 'X') {
-             // 1. r + X -> ಱ (Rra)
              if(state.lastInput === 'r') { applyToEditor(cursorPos, 2, "ಱ", 'consonant', 'X'); return; }
-             
-             // 2. R + X -> ೠ (Vowel) OR ೄ (Matra)
              if(state.lastInput === 'R') { 
-                 // If previous R was processed as a Matra (e.g. k+R=ಕೃ), change to ೄ (ಕೄ)
-                 if (state.lastType === 'matra') {
-                     applyToEditor(cursorPos, 2, "ೄ", 'matra', 'X'); 
-                 } else {
-                     // Otherwise (standalone R=ಋ), change to ೠ
-                     applyToEditor(cursorPos, 2, "ೠ", 'vowel', 'X'); 
-                 }
+                 if (state.lastType === 'matra') applyToEditor(cursorPos, 2, "ೄ", 'matra', 'X'); 
+                 else applyToEditor(cursorPos, 2, "ೠ", 'vowel', 'X'); 
                  return; 
              }
-             
-             // 3. L + X -> ೞ (Lla)
              if(state.lastInput === 'L') { applyToEditor(cursorPos, 2, "ೞ", 'consonant', 'X'); return; }
-             
-             // 4. Default -> Nukta (Remove 1 char 'X', insert Nukta)
              applyToEditor(cursorPos, 1, NUKTA, 'special', 'X'); return;
         }
 
@@ -754,21 +794,18 @@
         if (isBreakKeyPrefix && state.lastInput === activeMap.breakKey) {
             const combo = state.lastInput + charTyped;
             const isValid = activeMap.consonants[combo] || (activeMap.specials && activeMap.specials[combo]) || activeMap.vowels[combo];
-            
             if (!isValid) {
-                // EXPLICIT BARAHA LOGIC: Replace ~ with ZWNJ (Halant Non-Joiner)
                 applyToEditor(cursorPos - 1, 1, ZWNJ, 'special', ""); 
                 state.lastInput = ""; 
-                // Fall through to process the current 'charTyped'
             }
         }
 
-        // 2. EXPLICIT FORCE HALANT (Sampurna ^)
+        // 2. FORCE HALANT
         if (activeMap.forceHalantKey && charTyped === activeMap.forceHalantKey) {
             applyToEditor(cursorPos, 1, ZWNJ, 'special', ""); return;
         }
 
-        // 3. EXPLICIT SOFT BREAK (Sampurna =)
+        // 3. SOFT BREAK
         if (!isBreakKeyPrefix && charTyped === activeMap.breakKey) {
             applyToEditor(cursorPos, 1, "", 'special', ""); 
             state.lastInput = ""; 
@@ -903,13 +940,7 @@
 
     function saveText() { const b = new Blob([editor.value], {type:'text/plain;charset=utf-8'}); const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download="kannada_text.txt"; a.click(); }
     function copyText() { editor.select(); document.execCommand('copy'); showToast("Copied!"); }
-    function clearText() { 
-		if(editor.value != '') {
-			if(confirm('Clear?')){ 
-				editor.value=''; state.lastInput=''; 
-			}
-		}			
-	}
+    function clearText() { if(confirm('Clear?')){ editor.value=''; state.lastInput=''; } }
 </script>
 </body>
 </html>
