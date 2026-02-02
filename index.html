@@ -330,7 +330,7 @@
                 { title: "Specials / Punctuation", rows: [["M", "ಂ (ಅನುಸ್ವಾರ)"], ["MM", "ಁ (ಚಂದ್ರಬಿಂದು)"], ["H", "ಃ (ವಿಸರ್ಗ)"], ["OM", "ಓಂ"], ["|", "। (ದಂಡ)"], ["||", "॥ (2 ದಂಡ)"]] },
                 { title: "Special Consonants", rows: [["Rh", "ಱ (Rra)"], ["RH", "ೞ (Lla)"], ["z", " ಼ (NUKTA)"], ["f", "ಫ಼ (Fa)"], ["Z", "ಜ಼ (Za)"], ["Zh", "ಝ಼ (Za)"]] }
             ],
-            buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "಄", "ೱ", "ೲ", "U", "–", "₹", "ಗ್ಂ"+ZWNJ, "ಗ್ಗ್"+ZWNJ, "ಀ", "ಁ", "।", "॥", "ꣳ", "॒", "॑", "᳚", "ಽ" ]
+            buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "಄", "ೱ", "ೲ", "U", "–", "₹", "ಀ", "ಁ", "ಗ್ಂ", "ಗ್ಗ್", "।", "॥", "ꣳ", "॒", "॑", "᳚", "ಽ" ]
         },
         baraha: {
             name: "Baraha",
@@ -368,7 +368,7 @@
                 { title: "Nasal / Old Consonants", rows: [["~g", "ಙ (Nga)"], ["~j", "ಞ (Nya)"], ["rx", "ಱ (Rra)"], ["Lx", "ೞ (Lla)"]] },
                 { title: "Specials / Vedic", rows: [["~M", "ಁ (Chandrabindu)"], ["&", "ಽ (Avagraha)"], ["~lu", "ಌ (Vocalic L)"], ["Rs", "₹ (Rupee)"], ["OM", "ಓಂ"]] }
             ],
-            buttons: ["ಙ್", "ಞ್", "ಱ್", "ೞ್", "ಌ", "ೡ", "಄", "ೱ", "ೲ", "U", "–", "ಀ", "ಁ", "ಽ", "₹", "ಗ್ಂ"+ZWNJ, "ಗ್ಗ್"+ZWNJ, "।", "॥", "ꣳ", "॒", "॑", "᳚"]
+            buttons: ["ಙ್", "ಞ್", "ಱ್", "ೞ್", "ಌ", "ೡ", "಄", "ೱ", "ೲ", "U", "–", "ಀ", "ಁ", "₹", "ಗ್ಂ", "ಗ್ಗ್", "।", "॥", "ꣳ", "॒", "॑", "᳚", "ಽ"]
         },
         nudi: {
             name: "Nudi 6.1 (Visual)",
@@ -385,7 +385,7 @@
                 { title: "Nukta / Ligatures", rows: [["X", "Nukta / rX=ಱ, RX=ೠ, LX=ೞ"]] },
                 { title: "Consonants", rows: [["z", "ಞ (Nya)"], ["Z", "ಙ (Nga)"]] }
             ],
-            buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "಄", "ೱ", "ೲ", "U", "–", "ಀ", "ಁ", "₹", "ಗ್ಂ"+ZWNJ, "ಗ್ಗ್"+ZWNJ, "।", "॥", "॒", "॑", "᳚", "ಽ"]
+            buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "಄", "ೱ", "ೲ", "U", "–", "ಀ", "ಁ", "₹", "ಗ್ಂ", "ಗ್ಗ್", "।", "॥", "॒", "॑", "᳚", "ಽ"]
         }
     };
 
@@ -559,7 +559,7 @@
                 const btn = document.createElement('button');
                 btn.className = "v-btn";
                 let display = char.replace(ZWNJ, '').replace(ZWJ, '');
-                if(['।', '॥', '॒','॑','᳚','ꣳ','ಽ'].includes(display)) btn.className += " vedic";
+                if(['।', '॥', '॒','॑','᳚','ꣳ','ಽ','ಗ್ಂ', 'ಗ್ಗ್'].includes(display)) btn.className += " vedic";
                 btn.innerText = display;
                 btn.onclick = () => insertDirect(char);
                 vKeypad.appendChild(btn);
