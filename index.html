@@ -18,12 +18,12 @@
 
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: var(--bg); padding: 20px; color: var(--text); 
+            background: var(--bg); padding: 5px; color: var(--text); 
         }
         
         .container { 
             max-width: 1800px; margin: 0 auto; background: var(--surface); 
-            padding: 30px; border-radius: 16px; 
+            padding: 20px; border-radius: 10px; 
             box-shadow: 0 10px 30px rgba(251, 192, 45, 0.3); 
             border: 1px solid var(--accent);
         }
@@ -41,14 +41,14 @@
         }
 
         .toolbar { 
-            background: #fff9c4; padding: 15px; border-radius: 12px; margin-bottom: 15px; 
+            background: #fff9c4; padding: 10px; border-radius: 10px; margin-bottom: 15px; 
             display: flex; gap: 20px; align-items: center; flex-wrap: wrap; 
             border: 1px solid var(--accent);
         }
 
         /* Memory Bar Styles */
         .memory-bar {
-            display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+            display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;
             padding: 0 5px;
         }
         .mem-slot {
@@ -97,13 +97,13 @@
 
         /* Keyboard Styles */
         .kbd-container { 
-            background: #eeeeee; padding: 20px; border-radius: 12px; margin-bottom: 20px; 
+            background: #eeeeee; padding: 10px; border-radius: 10px; margin-bottom: 20px; 
             display: none; flex-direction: column; align-items: center; 
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #e0e0e0;
         }
         .kbd-container.show { display: flex; }
         .kbd-row { display: flex; justify-content: center; gap: 6px; margin-bottom: 8px; width: 100%; max-width: 850px; }
-        .row-1 { padding-left: 30px; } .row-2 { padding-left: 55px; }
+        .row-1 { padding-left: 2px; } .row-2 { padding-left: 38px; }
         
         .key-cap { 
             width: 52px; height: 52px; background: white; border: 1px solid #bbb; border-radius: 6px; 
@@ -160,9 +160,9 @@
         .v-btn.control { background: #eceff1; border-color: #cfd8dc; color: #455a64; font-size: 15px; font-weight: bold; }
 
         textarea { 
-            width: 100%; height: 400px; padding: 25px; 
+            width: 100%; height: 400px; padding: 20px; 
             font-family: 'Noto Sans Kannada', sans-serif; font-size: 28px; 
-            border: 2px solid #ffecb3; border-radius: 12px; box-sizing: border-box; 
+            border: 2px solid #ffecb3; border-radius: 8px; box-sizing: border-box; 
             line-height: 1.8; color: #212121;
         }
         textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(211, 47, 47, 0.1); }
@@ -1070,7 +1070,7 @@ function updateVirtualKeys() {
             html += `</table>`; div.innerHTML = html; grid.appendChild(div);
         };
         let controls = {};
-        if (activeMap.name === "Sampurna") controls = { "=": "Soft Break (ಕ್ಹ)", "^": "Force Halant (ಕ್‌ಹ)", "x": "ZWJ" };
+        if (activeMap.name === "Sampurna") controls = { "&": "Soft Break (ಕ್ಹ)", "^": "Force Halant (ಕ್‌ಹ)", "x": "ZWJ" };
         else if (activeMap.name === "Baraha") controls = { "~": "Halant Non-Joiner (ಕ್‌ಹ)", "^": "ZWJ (Joiner)", "~g": "Nga", "~j": "Nya" };
         else controls = { "f": "Virama (್)", "X": "Nukta / Ligatures (rX=ಱ)" };
         createSection("Control & Special Rules", controls, true);
@@ -1081,7 +1081,7 @@ function updateVirtualKeys() {
         if(!combinedSpecials["|"]) combinedSpecials["|"] = "।"; if(!combinedSpecials["||"]) combinedSpecials["||"] = "॥";
         createSection("Numbers & Punctuation", combinedSpecials);
         const mergedMantra = { ...mantraSpecial, ...(activeMap.mantra || {}) };
-        createSection("Mantra Mode keys", mergedMantra);
+        createSection("Mantra mode keys", mergedMantra);
     }
 
     function saveText() { const b = new Blob([editor.value], {type:'text/plain;charset=utf-8'}); const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download="kannada_text.txt"; a.click(); }
