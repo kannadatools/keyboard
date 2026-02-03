@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>⌨️ Kannada Transliterator Ultimate (v7.0)</title>
+    <title>⌨️ Kannada Transliterator Ultimate (v7.2)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -341,13 +341,11 @@ const schemes = {
                 "p": "ಪ್", "ph": "ಫ್", "b": "ಬ್", "bh": "ಭ್", "m": "ಮ್",
                 "y": "ಯ್", "r": "ರ್", "l": "ಲ್", "L": "ಳ್", "v": "ವ್", "w": "ವ್",
                 "sh": "ಶ್", "s": "ಸ್", "h": "ಹ್", "Sh": "ಷ್", "S": "ಷ್",
-                "Rh": "ಱ್", "RH": "ೞ್",
+                "RR": "ಱ್", "RH": "ೞ್",
                 "Z": "ಜ"+NUKTA+VIRAMA, "Zh": "ಝ"+NUKTA+VIRAMA, "f": "ಫ"+NUKTA+VIRAMA,
                 "z": NUKTA
             },
-            specials: { 
-                "OM": "om" 
-            },
+            specials: { },
             mantra: { 
                 "|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda",
                 "/": "anudatta", "\'": "udatta", "\"": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha",
@@ -389,7 +387,7 @@ const schemes = {
                 "f": "ಫ"+NUKTA+VIRAMA, "z": "ಜ"+NUKTA+VIRAMA 
             },
             specials: { 
-                "&": "avagraha", "Rs": "rupee", "OM": "om", "~M": "chandrabindu", "~lu": "ಌ" 
+                "&": "avagraha", "Rs": "rupee", "~M": "chandrabindu", "~lu": "ಌ" 
             },
             mantra: {
                 "|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda",
@@ -414,8 +412,8 @@ const schemes = {
                 "/": "anudatta", "\'": "udatta", "\"": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha"},
             help: [
                 { title: "f Key", rows: [["f", "ವಿರಾಮ/ವೊತ್ತು (kf→ಕ್,  gfm→ಗ್ಮ, rfy→ರ್ಯ)"], ["ff", "Force Halant (enffke→ಎನ್‌ಕೆ)"], ["F", "ರ ವೊತ್ತು (rFy → ರ‍್ಯ)"]] },
-                { title: "Specials", rows: [["X", "rX=ಱ, RX=ೠ, LX=ೞ"],["z", "ಞ"], ["Z", "ಙ"]] },
-				 { title: "Mantra Mode shortcuts", rows: [["/", "[॒] ಅನುದಾತ್ತ (ka/ → ಕ॒)"], ["\'", "[॑] ಸ್ವರಿತ (ka' → ಕ॑)"], ["\"", "[᳚] ದೀರ್ಘ ಸ್ವರಿತ (ka\" → ಕ᳚)"],  ["@", "[ಗ್ಂ]"], ["#", "[ಗ್ಗ್]"], ["| or \\", "[।] ದಂಡ"], ["|| or \\\\", "[॥] 2 ದಂಡ"], ["$", "ಽ (ಅವಗ್ರಹ)"]] }
+                { title: "Specials", rows: [["X", "Nukta (jX → ಜ಼)"], ["X", "Special Cases: rX=ಱ, RX=ೠ, LX=ೞ"],["z", "ಞ"], ["Z", "ಙ"]] },
+				{ title: "Mantra Mode shortcuts", rows: [["/", "[॒] ಅನುದಾತ್ತ (ka/ → ಕ॒)"], ["\'", "[॑] ಸ್ವರಿತ (ka' → ಕ॑)"], ["\"", "[᳚] ದೀರ್ಘ ಸ್ವರಿತ (ka\" → ಕ᳚)"],  ["@", "[ಗ್ಂ]"], ["#", "[ಗ್ಗ್]"], ["| or \\", "[।] ದಂಡ"], ["|| or \\\\", "[॥] 2 ದಂಡ"], ["$", "ಽ (ಅವಗ್ರಹ)"]] }
 
             ],
             buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "಄", "ೱ", "ೲ", "U", "–", "ಀ", "ಁ", "₹", "ಗ್ಂ", "ಗ್ಗ್", "।", "॥", "॒", "॑", "᳚", "ಽ"]
@@ -940,26 +938,55 @@ function updateVirtualKeys() {
         else { state.lastInput = char; state.lastType = 'english'; }
     }
 
-    function processPhoneticInput(charTyped, cursorPos) {
+	function processPhoneticInput(charTyped, cursorPos) {
+        // --- NEW: BARAHA NUKTA (x) LOGIC ---
+        // Fixes Px -> ಫ಼ (Consumes 'x' and inserts Nukta before Virama)
+        const comboCheck = state.lastInput + charTyped;
+        
+        // Check if we are in Baraha, typed 'x', and it's NOT a mapped combo (like rx -> ಱ)
+        if (activeMap.name === "Baraha" && charTyped === 'x' && !activeMap.consonants[comboCheck]) {
+             // Check the character BEFORE the 'x' we just typed
+             // cursorPos is currently AFTER 'x'. So char before 'x' is at index (cursorPos - 2).
+             const charBeforeX = (cursorPos >= 2) ? editor.value.substring(cursorPos - 2, cursorPos - 1) : null;
+             
+             if (charBeforeX === VIRAMA) {
+                 // Scenario: Consonant + Virama + x (e.g., P + ್ + x)
+                 // Action: Delete 2 chars (Virama + x), Insert (Nukta + Virama)
+                 // Result: P + ಼ + ್
+                 applyToEditor(cursorPos, 2, NUKTA + VIRAMA, 'special', ""); 
+             } else {
+                 // Scenario: Vowel/Other + x
+                 // Action: Delete 1 char (x), Insert Nukta
+                 applyToEditor(cursorPos, 1, NUKTA, 'special', ""); 
+             }
+             return;
+        }
+        // -----------------------------------
+
+        // 1. PREFIX BREAK LOGIC (Baraha ~)
         if (isBreakKeyPrefix && state.lastInput === activeMap.breakKey) {
             const combo = state.lastInput + charTyped;
             const isValid = activeMap.consonants[combo] || (activeMap.specials && activeMap.specials[combo]) || activeMap.vowels[combo];
             if (!isValid) {
+                // Replace prefix (~) with ZWNJ and proceed to process current char
                 applyToEditor(cursorPos - 1, 1, ZWNJ, 'special', ""); 
                 state.lastInput = ""; 
             }
         }
 
+        // 2. FORCE HALANT (Sampurna ^)
         if (activeMap.forceHalantKey && charTyped === activeMap.forceHalantKey) {
             applyToEditor(cursorPos, 1, ZWNJ, 'special', ""); return;
         }
 
+        // 3. EXPLICIT SOFT BREAK (Sampurna &)
         if (!isBreakKeyPrefix && charTyped === activeMap.breakKey) {
             applyToEditor(cursorPos, 1, "", 'special', ""); 
             state.lastInput = ""; 
             return;
         }
 
+        // 4. AUTO ANUSVARA (Sampurna Only)
         if (activeMap.name === "Sampurna" && autoAnusvaraToggle.checked && activeMap.consonants[charTyped]) {
             let prevKey = state.lastInput;
             if ( (prevKey === 'n' && autoAnusvaraTriggers['n'].includes(charTyped)) || 
@@ -970,6 +997,7 @@ function updateVirtualKeys() {
 
         let processed = false, output = "", type = "", newKeyString = charTyped, deleteCount = 1;
 
+        // 5. ZWJ LOGIC
         if (charTyped === activeMap.zwjKey) {
             const current = editor.value;
             const beforeChar = current.substring(cursorPos - 2, cursorPos - 1); 
@@ -980,6 +1008,7 @@ function updateVirtualKeys() {
             }
         }
 
+        // 6. STANDARD PROCESSING
         if (!processed && numToggle.checked && commonNumbers[charTyped]) { output = commonNumbers[charTyped]; type = 'number'; processed = true; }
         else if (!processed && state.lastInput) {
             const potentialMerge = state.lastInput + charTyped;
@@ -1022,7 +1051,8 @@ function updateVirtualKeys() {
         if (processed && output !== undefined) applyToEditor(cursorPos, deleteCount, output, type, newKeyString);
         else { state.lastInput = charTyped; state.lastOutput = charTyped; state.lastType = 'english'; }
     }
-
+	
+	
     function applyToEditor(cursorPos, deleteCount, output, type, keyString) {
         const currentVal = editor.value;
         const preText = currentVal.substring(0, cursorPos - deleteCount);
