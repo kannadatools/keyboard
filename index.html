@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>⌨️ Kannada Transliterator Ultimate (v4.0)</title>
+    <title>⌨️ Kannada Transliterator Ultimate (v7.0)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -34,13 +34,12 @@
             padding-bottom: 2px; margin-bottom: 2px;
         }
         
-		.subtitle { 
+        .subtitle { 
             color: var(--primary); margin-top: 0; font-size: 16px; 
             display: flex; align-items: center; gap: 10px; 
             padding-bottom: 10px; margin-bottom: 5px;
         }
 
-		
         .toolbar { 
             background: #fff9c4; padding: 15px; border-radius: 12px; margin-bottom: 15px; 
             display: flex; gap: 20px; align-items: center; flex-wrap: wrap; 
@@ -93,13 +92,10 @@
         button.font-btn:hover { background: #fbc02d; }
         button.emoji-btn { background: #fff9c4; color: #333; border: 1px solid #fbc02d; }
         button.emoji-btn:hover { background: #fff59d; }
+        button.kbd-btn { background: #fbc02d; color: #3e2723; border: 1px solid #f9a825; }
+        button.kbd-btn:hover { background: #f9a825; }
 
-        /* Nudi Visual Keyboard Styles */
-        .nudi-controls {
-            display: none; /* Hidden by default */
-            margin-bottom: 15px; align-items: center; gap: 10px;
-            background: #fff3e0; padding: 10px; border-radius: 8px; border: 1px solid #ffe0b2;
-        }
+        /* Keyboard Styles */
         .kbd-container { 
             background: #eeeeee; padding: 20px; border-radius: 12px; margin-bottom: 20px; 
             display: none; flex-direction: column; align-items: center; 
@@ -122,10 +118,17 @@
         .key-cap .key-label { font-size: 10px; color: #757575; margin-top: 2px; font-weight: bold;}
         .key-cap.active .glyph, .key-cap.active .key-label { color: white; }
 
+		/* Special Keys */
+		.key-cap.wide { width: 85px; font-size: 16px; font-weight: bold; background: #ffe0b2; color: #bf360c; }
+		.key-cap.extra-wide { width: 300px; font-weight: bold; color: #bf360c; }
+		.key-cap.wide:active, .key-cap.extra-wide:active { background: #ffcc80; }
 
+        /* Virtual Keys - Separated */
         .virtual-keys { 
-            display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; 
-            padding: 12px; background: #fffde7; border: 1px solid #fff59d; border-radius: 12px; 
+            display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+            margin-bottom: 15px; padding: 12px; 
+            background: #fffde7; border: 1px solid #fff59d; border-radius: 12px; 
+            width: 100%; box-sizing: border-box;
         }
         .v-btn { 
             background: white; border: 1px solid #fbc02d; color: #bf360c; 
@@ -135,8 +138,10 @@
         }
         .v-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
         
+        /* Blue Vedic Keys */
         .v-btn.vedic { background: #e1f5fe; border-color: #81d4fa; color: #0277bd; }
         .v-btn.vedic:hover { background: #0288d1; color: white; }
+        
         .v-btn.control { background: #eceff1; border-color: #cfd8dc; color: #455a64; font-size: 15px; font-weight: bold; }
 
         textarea { 
@@ -188,7 +193,7 @@
 
 <div class="container">
     <h1>⌨️ Kannada Keyboard (Transliterator)</h1>
-	<span class="subtitle" >Use Our custom Transliteration Scheme - ಸಂಪೂರ್ಣ  or ಬರಹ or ನುಡಿ (ಕಗಪ) key layout by selecting INPUT SCHEME</span>
+    <span class="subtitle">Use Our custom Transliteration Scheme - ಸಂಪೂರ್ಣ  or ಬರಹ or ನುಡಿ (ಕಗಪ) key layout by selecting INPUT SCHEME</span>
 
     <div class="toolbar">
         <div class="control-group">
@@ -215,6 +220,7 @@
             <button class="font-btn" onclick="changeFontSize(-2)" title="Decrease Font">A-</button>
         </div>
 
+        <button class="kbd-btn" id="toggleKbdBtn" onclick="toggleKeyboard()">Show Keyboard</button>
         <button class="emoji-btn" onclick="openEmojiModal()" title="Insert Emoji">Emoji</button>
         <button class="info" onclick="openMapModal()" title="View Full Mapping of Transliteration Scheme">Key Map</button>
         <div style="flex-grow:1;"></div>
@@ -226,22 +232,19 @@
 
     <div class="memory-bar" id="memoryBar"></div>
 
-    <div class="nudi-controls" id="nudiControls">
-        <button id="toggleKbdBtn" onclick="toggleKeyboard()" style="background:#fbc02d; color:#3e2723;">Show On-Screen Keyboard</button>
-        <!--<span class="label" style="color:#bf360c;">Nudi Scheme Active</span> -->
+    <div id="keyboard" class="kbd-container">
+        <div id="qwerty-layer"></div>
     </div>
-    <div id="keyboard" class="kbd-container"></div>
+
     <div class="virtual-keys" id="vKeypad"></div>
 
-	<textarea id="editor" placeholder=""></textarea>
+    <textarea id="editor" placeholder=""></textarea>
 
-    <div class="help-grid" id="helpGrid"></div>
     <div class="help-grid" id="helpGrid"></div>
 
     <div class="footer-notice">
         Developed by Shashi [nsbhushana@gmail.com]
     </div>
-    </div> ```
 </div>
 
 <div id="toast">Mode Changed</div>
@@ -274,13 +277,14 @@
         'm': ['p','b','m'] 
     };
 
-    const kbdDefinition = [
-        { row: 0, keys: "1234567890".split("") },
+	const kbdDefinition = [
+        { row: 0, keys: "1234567890".split("").concat(["BACKSPACE"]) },
         { row: 1, keys: "qwertyuiop".split("") },
-        { row: 2, keys: "asdfghjkl".split("") },
-        { row: 3, keys: "zxcvbnm".split("") }
+        { row: 2, keys: "asdfghjkl".split("").concat(["ENTER"]) },
+        { row: 3, keys: "zxcvbnm".split("") },
+        { row: 4, keys: ["SPACE"] }
     ];
-
+	
     const emojis = {
         smileys: ["😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😮‍💨", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🫣", "🤭", "🫢", "🫡", "🤫", "🫠", "🤥", "😶", "😶‍🌫️", "😐", "😑", "😬", "🫨", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😵", "😵‍💫", "🫥", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👹", "👺", "🤡", "💩", "👻", "💀", "☠️", "👽", "👾", "🤖", "🎃", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾"],
         people: ["👋", "🤚", "🖐️", "✋", "🖖", "👌", "🤌", "🤏", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉", "👆", "🖕", "👇", "☝️", "👍", "👎", "✊", "👊", "🤛", "🤜", "👏", "🙌", "👐", "🤲", "🤝", "🙏", "✍️", "💅", "🤳", "💪", "🦾", "🦿", "🦵", "🦶", "👂", "🦻", "👃", "🧠", "🫀", "🫁", "🦷", "🦴", "👀", "👁️", "👅", "👄", "🫦", "💋", "🩸"],
@@ -292,7 +296,7 @@
         symbols: ["💘", "💝", "💖", "💗", "💓", "💞", "💕", "💟", "❣️", "💔", "❤️‍🔥", "❤️‍🩹", "❤️", "🧡", "💛", "💚", "💙", "💜", "🤎", "🖤", "🤍", "💯", "♨️", "💢", "💬", "👁️‍🗨️", "🗨️", "🗯️", "💭", "💤", "🌐", "♠️", "♥️", "♦️", "♣️", "🃏", "🀄", "🎴", "🎭", "🔇", "🔈", "🔉", "🔊", "🔔", "🔕", "🎼", "🎵", "🎶", "💹", "🏧", "🚮", "🚰", "♿", "🚹", "🚺", "🚻", "🚼", "🚾", "🛂", "🛃", "🛄", "🛅", "⚠️", "🚸", "⛔", "🚫", "🚳", "🚭", "🚯", "🚱", "🚷", "📵", "🔞", "☢️", "☣️", "⬆️", "↗️", "➡️", "↘️", "⬇️", "↙️", "⬅️", "↖️", "↕️", "↔️", "↩️", "↪️", "⤴️", "⤵️", "🔃", "🔄", "🔙", "🔚", "🔛", "🔜", "🔝", "🛐", "⚛️", "🕉️", "✡️", "☸️", "☯️", "✝️", "☦️", "☪️", "☮️", "🕎", "🔯", "♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓", "⛎", "", "🔁", "🔂", "▶️", "⏩", "⏭️", "⏯️", "◀️", "⏪", "⏮️", "🔼", "⏫", "🔽", "⏬", "⏸️", "⏹️", "⏺️", "⏏️", "🎦", "🔅", "🔆", "📶", "📳", "📴", "♀️", "♂️", "⚧", "✖️", "➕", "➖", "➗", "♾️", "‼️", "⁉️", "❓", "❔", "❕", "❗️", "〰️", "💱", "💲", "⚕️", "♻️", "⚜️", "🔱", "📛", "🔰", "⭕", "✅", "☑️", "✔️", "❌", "❎", "➰", "➿", "〽️", "✳️", "✴️", "❇️", "©️", "®️", "™️", "#️⃣", "*️⃣", "0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟", "🔠", "🔡", "🔢", "🔣", "🔤", "🅰️", "🆎", "🅱️", "🆑", "🆒", "🆓", "ℹ️", "🆔", "Ⓜ️", "🆕", "🆖", "🅾️", "🆗", "🅿️", "🆘", "🆙", "🆚", "🈁", "🈂️", "🈷️", "🈶", "🈯", "🉐", "🈹", "🈚", "🈲", "🉑", "🈸", "🈴", "🈳", "㊗️", "㊙️", "🈺", "🈵", "🔴", "🟠", "🟡", "🟢", "🔵", "🟣", "🟤", "⚫", "⚪", "🟥", "🟧", "🟨", "🟩", "🟦", "🟪", "🟫", "⬛", "⬜", "◼️", "◻️", "◾", "◽", "▪️", "▫️", "🔶", "🔷", "🔸", "🔹", "🔺", "🔻", "💠", "🔘", "🔳", "🔲"]
     };
 
-    const schemes = {
+const schemes = {
         sampurna: {
             name: "Sampurna",
             isVisual: false,
@@ -310,7 +314,8 @@
                 "a": "", "aa": "ಾ", "A": "ಾ", "i": "ಿ", "ee": "ೀ", "I": "ೀ", "ii": "ೀ",
                 "u": "ು", "oo": "ೂ", "U": "ೂ", "uu": "ೂ", "e": "ೆ", "E": "ೇ", "ai": "ೈ",
                 "o": "ೊ", "O": "ೋ", "au": "ೌ", "ou": "ೌ", "R": "ೃ", "RR": "ೄ", "RU": "ೄ",
-                "q": "ೢ", "Q": "ೣ", "MM": "ಁ"
+                "q": "ೢ", "Q": "ೣ",
+                "MM": "ಁ" 
             },
             consonants: {
                 "k": "ಕ್", "kh": "ಖ್", "g": "ಗ್", "gh": "ಘ್", "G": "ಙ್",
@@ -328,17 +333,17 @@
                 "OM": "om" 
             },
             mantra: { 
+                "|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda",
                 "/": "anudatta", "\'": "udatta", "\"": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha",
-                "C" : "೧॒॑", "V" : "೨॒॑", "B" : "೩॒॑",
-				"|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda"
+                "C" : "೧॒॑", "V" : "೨॒॑", "B" : "೩॒॑"
             },
             help: [
-                { title: "Control Keys", rows: [["=", "Soft Break (k=h -> ಕ್ಹ)"], ["^", "Force Halant (k^h -> ಕ್‌ಹ)"], ["x", "ZWJ (rxya → ರ‍್ಯ)"]] },
-                { title: "Mantra", rows: [["/", "॒ (ಅನುದಾತ್ತ)"], ["\'", "॑ (ಸ್ವರಿತ)"], ["\"", "᳚ (ದೀರ್ಘ ಸ್ವರಿತ)"],  ["@", "ಗ್ಂ"+ZWNJ], ["#", "ಗ್ಗ್"+ZWNJ], ["$", "ಽ (ಅವಗ್ರಹ)"]] },
-                { title: "Specials / Punctuation", rows: [["M", "ಂ (ಅನುಸ್ವಾರ)"], ["MM", "ಁ (ಚಂದ್ರಬಿಂದು)"], ["H", "ಃ (ವಿಸರ್ಗ)"], ["OM", "ಓಂ"], ["|", "। (ದಂಡ)"], ["||", "॥ (2 ದಂಡ)"]] },
-                { title: "Special Consonants", rows: [["Rh", "ಱ (Rra)"], ["RH", "ೞ (Lla)"], ["z", " ಼ (NUKTA)"], ["f", "ಫ಼ (Fa)"], ["Z", "ಜ಼ (Za)"], ["Zh", "ಝ಼ (Za)"]] }
+                { title: "Control Keys", rows: [["=", "Soft Break (k=h → ಕ್ಹ)"], ["^", "Force Halant (k^h -> ಕ್‌ಹ)"], ["x", "ZWJ (rxya → ರ‍್ಯ, Axypal → ಆ್ಯಪಲ್)"]] },
+                { title: "Specials/Nukta", rows: [["M", "[ಂ] ಅನುಸ್ವಾರ"], ["MM", "[ಁ]  ಚಂದ್ರಬಿಂದು"], ["H", "[ಃ] ವಿಸರ್ಗ"], ["Rh", "[ಱ]  ಶಕಟ ರೇಫ (ṟa)"], ["RH", "[ೞ] (ḻa)"], ["z", " [಼] ನುಕ್ತ [ saz → ಸ಼] "], ["f, Z, Zh", "ಫ಼್, ಜ಼್,  ಝ಼್"]] },
+                { title: "Mantra Mode shortcuts", rows: [["/", "[॒] ಅನುದಾತ್ತ (ka/ → ಕ॒)"], ["\'", "[॑] ಸ್ವರಿತ (ka' → ಕ॑)"], ["\"", "[᳚] ದೀರ್ಘ ಸ್ವರಿತ (ka\" → ಕ᳚)"],  ["@", "[ಗ್ಂ]"], ["#", "[ಗ್ಗ್]"], ["$", "[ಽ] ಅವಗ್ರಹ"], ["| or \\", "[।] ದಂಡ"], ["|| or \\\\", "[॥] 2 ದಂಡ"], ["C,V,B","೧॒॑, ೨॒॑, ೩॒॑"]] }
+
             ],
-            buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "಄", "ೱ", "ೲ", "U", "–", "₹", "ಀ", "ಁ", "ಗ್ಂ", "ಗ್ಗ್", "।", "॥", "ꣳ", "॒", "॑", "᳚", "ಽ" ]
+            buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "಄", "ೱ", "ೲ", "U", "–", "ಀ", "ಁ", "₹", "ಗ್ಂ", "ಗ್ಗ್", "।", "॥", "ꣳ", "॒", "॑", "᳚", "ಽ" ]
         },
         baraha: {
             name: "Baraha",
@@ -370,12 +375,15 @@
             specials: { 
                 "&": "avagraha", "Rs": "rupee", "OM": "om", "~M": "chandrabindu", "~lu": "ಌ" 
             },
-            mantra: {"|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda"},
+            mantra: {
+                "|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda",
+                "/": "anudatta", "\'": "udatta", "\"": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ},
             help: [
-                { title: "Control Keys", rows: [["~", "Halant Non-Joiner (rAj~kumAr)"], ["^", "ZWJ (Joiner)"]] },
-                { title: "Nasal / Old Consonants", rows: [["~g", "ಙ (Nga)"], ["~j", "ಞ (Nya)"], ["rx", "ಱ (Rra)"], ["Lx", "ೞ (Lla)"]] },
-                { title: "Specials / Vedic", rows: [["~M", "ಁ (Chandrabindu)"], ["&", "ಽ (Avagraha)"], ["~lu", "ಌ (Vocalic L)"], ["Rs", "₹ (Rupee)"], ["OM", "ಓಂ"]] }
-            ],
+                { title: "Control Keys", rows: [["~", "Force Halant (en~ke → ಎನ್‌ಕೆ)"], ["^", "ZWJ-Joiner (r^ya → ರ‍್ಯ)"]] },
+                { title: "Specials", rows: [["~g", "ಙ"], ["~j", "ಞ"], ["rx", "ಱ (ṟa)"], ["Lx", "ೞ (ḻa)"], ["~M", "ಁ (ಚಂದ್ರಬಿಂದು)"], ["&", "ಽ (ಅವಗ್ರಹ)"], ["~lu", "ಌ (Vocalic L)"], ["Rs", "₹ (Rupee)"]] },
+                { title: "Mantra Mode shortcuts", rows: [["/", "[॒] ಅನುದಾತ್ತ (ka/ → ಕ॒)"], ["\'", "[॑] ಸ್ವರಿತ (ka' → ಕ॑)"], ["\"", "[᳚] ದೀರ್ಘ ಸ್ವರಿತ (ka\" → ಕ᳚)"],  ["@", "[ಗ್ಂ]"], ["#", "[ಗ್ಗ್]"], ["| or \\", "[।] ದಂಡ"], ["|| or \\\\", "[॥] 2 ದಂಡ"]] }
+				],
+			
             buttons: ["ಙ್", "ಞ್", "ಱ್", "ೞ್", "ಌ", "ೡ", "಄", "ೱ", "ೲ", "U", "–", "ಀ", "ಁ", "₹", "ಗ್ಂ", "ಗ್ಗ್", "।", "॥", "ꣳ", "॒", "॑", "᳚", "ಽ"]
         },
         nudi: {
@@ -384,14 +392,15 @@
             vowels: { "a":"ಅ","A":"ಆ","i":"ಇ","I":"ಈ","u":"ಉ","U":"ಊ","R":"ಋ","e":"ಎ","E":"ಏ","Y":"ಐ","o":"ಒ","O":"ಓ","V":"ಔ","M":"ಂ","H":"ಃ" },
             matras: { "a":"","A":"ಾ","i":"ಿ","I":"ೀ","u":"ು","U":"ೂ","R":"ೃ","e":"ೆ","E":"ೇ","Y":"ೈ","o":"ೊ","O":"ೋ","V":"ೌ","M":"ಂ","H":"ಃ" },
             consonants: { "k":"ಕ","K":"ಖ","g":"ಗ","G":"ಘ","z":"ಞ","c":"ಚ","C":"ಛ","j":"ಜ","J":"ಝ","Z":"ಙ","q":"ಟ","Q":"ಠ","w":"ಡ","W":"ಢ","N":"ಣ","t":"ತ","T":"ಥ","d":"ದ","D":"ಧ","n":"ನ","p":"ಪ","P":"ಫ","b":"ಬ","B":"ಭ","m":"ಮ","y":"ಯ","r":"ರ","l":"ಲ","v":"ವ","S":"ಶ","x":"ಷ","s":"ಸ","h":"ಹ","L":"ಳ","f":VIRAMA },
-            specials: { "|": "danda", "||": "ddanda" },
+            specials: {},
             mantra: { 
-				"/": "anudatta", "\'": "udatta", "\"": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha", "|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda",
-			},
+                "|": "danda", "||": "ddanda", "\\": "danda", "\\\\": "ddanda",
+                "/": "anudatta", "\'": "udatta", "\"": "d_svarita", "@": "ಗ್ಂ"+ZWNJ, "#": "ಗ್ಗ್"+ZWNJ, "$": "avagraha"},
             help: [
-                { title: "Visual Mode", rows: [["f", "Virama/Vottu"], ["F", "Arkavattu/R-Vottu"]] },
-                { title: "Nukta / Ligatures", rows: [["X", "Nukta / rX=ಱ, RX=ೠ, LX=ೞ"]] },
-                { title: "Consonants", rows: [["z", "ಞ (Nya)"], ["Z", "ಙ (Nga)"]] }
+                { title: "f Key", rows: [["f", "ವಿರಾಮ/ವೊತ್ತು (kf→ಕ್,  gfm→ಗ್ಮ, rfy→ರ್ಯ)"], ["ff", "Force Halant (enffke→ಎನ್‌ಕೆ)"], ["F", "ರ ವೊತ್ತು (rFy → ರ‍್ಯ)"]] },
+                { title: "Specials", rows: [["X", "rX=ಱ, RX=ೠ, LX=ೞ"],["z", "ಞ"], ["Z", "ಙ"]] },
+				 { title: "Mantra Mode shortcuts", rows: [["/", "[॒] ಅನುದಾತ್ತ (ka/ → ಕ॒)"], ["\'", "[॑] ಸ್ವರಿತ (ka' → ಕ॑)"], ["\"", "[᳚] ದೀರ್ಘ ಸ್ವರಿತ (ka\" → ಕ᳚)"],  ["@", "[ಗ್ಂ]"], ["#", "[ಗ್ಗ್]"], ["| or \\", "[।] ದಂಡ"], ["|| or \\\\", "[॥] 2 ದಂಡ"], ["$", "ಽ (ಅವಗ್ರಹ)"]] }
+
             ],
             buttons: ["ಱ್", "ೞ್", "ಌ", "ೡ", "಼", "಄", "ೱ", "ೲ", "U", "–", "ಀ", "ಁ", "₹", "ಗ್ಂ", "ಗ್ಗ್", "।", "॥", "॒", "॑", "᳚", "ಽ"]
         }
@@ -416,28 +425,19 @@
     const engToggle = document.getElementById('engMode');
     const schemeSelect = document.getElementById('schemeSelect');
     const vKeypad = document.getElementById('vKeypad');
-    const nudiControls = document.getElementById('nudiControls');
     const keyboardContainer = document.getElementById('keyboard');
 
-	// STARTUP
-    loadSettings(); // 1. Load saved preferences from LocalStorage
-    initUI();       // 2. Initialize UI based on those loaded settings
+    // STARTUP
+    loadSettings(); 
+    initUI();       
 
     function initUI() {
         const selected = schemeSelect.value;
         activeMap = schemes[selected];
         
-        if (activeMap.name.includes("Nudi")) {
-            nudiControls.style.display = "flex";
-            document.getElementById('autoAnusvaraGroup').style.display = "none";
-            renderKeyboard();
-        } else {
-            nudiControls.style.display = "none";
-            keyboardContainer.classList.remove('show');
-            document.getElementById('toggleKbdBtn').innerText = "Show On-Screen Keyboard";
-            const aaGroup = document.getElementById('autoAnusvaraGroup');
-            if (aaGroup) aaGroup.style.display = (activeMap.name === "Sampurna") ? "flex" : "none";
-        }
+        // Show/Hide features based on Scheme
+        const aaGroup = document.getElementById('autoAnusvaraGroup');
+        if (aaGroup) aaGroup.style.display = (activeMap.name === "Sampurna") ? "flex" : "none";
 
         const bk = activeMap.breakKey;
         isBreakKeyPrefix = bk ? (Object.keys(activeMap.consonants).some(k => k.startsWith(bk)) || 
@@ -445,20 +445,24 @@
 
         updateHelpGrid();
         updateVirtualKeys();
+        renderKeyboard(); // Render OSK for current scheme
         renderMemoryBar();
         editor.focus();
         state = { lastInput: "", lastOutput: "", lastType: "" };
 
-        // Attach Save triggers to toggles dynamically
-        // This ensures clicking the box saves the state immediately
+		// Attach Save triggers
         autoAnusvaraToggle.onclick = saveSettings;
         mantraToggle.onclick = saveSettings;
-        numToggle.onclick = saveSettings;
+        
+        // UPDATED LINE: Re-render keyboard when Numbers mode changes
+        numToggle.onclick = () => { renderKeyboard(); saveSettings(); }; 
+        engToggle.onclick = () => { renderKeyboard(); saveSettings(); };
+		
     }
 
     function changeScheme() { 
         initUI(); 
-        saveSettings(); // Save new scheme selection
+        saveSettings(); 
         showToast(`Switched to ${activeMap.name}`); 
     }
 
@@ -468,10 +472,10 @@
         if(currentFontSize > 60) currentFontSize = 60;
         editor.style.fontSize = currentFontSize + "px";
         editor.focus();
-        saveSettings(); // Save new font size
+        saveSettings();
     }
 
-    // --- LOCAL STORAGE SETTINGS MANAGER ---
+    // --- LOCAL STORAGE ---
     function saveSettings() {
         const settings = {
             scheme: schemeSelect.value,
@@ -481,11 +485,7 @@
             numbers: numToggle.checked,
             memory: phraseMemory
         };
-        try {
-            localStorage.setItem("kTransSettings", JSON.stringify(settings));
-        } catch (e) {
-            console.warn("Cannot save settings (likely file:// protocol restriction):", e);
-        }
+        try { localStorage.setItem("kTransSettings", JSON.stringify(settings)); } catch (e) { console.warn(e); }
     }
 
     function loadSettings() {
@@ -496,28 +496,84 @@
                 if(saved.scheme && schemes[saved.scheme]) schemeSelect.value = saved.scheme;
                 if(saved.fontSize) { currentFontSize = saved.fontSize; editor.style.fontSize = currentFontSize + "px"; }
                 if(saved.memory) phraseMemory = saved.memory;
-                // Explicitly check for boolean values (true/false) not just existence
                 if(typeof saved.autoAnusvara === "boolean") autoAnusvaraToggle.checked = saved.autoAnusvara;
                 if(typeof saved.mantra === "boolean") mantraToggle.checked = saved.mantra;
                 if(typeof saved.numbers === "boolean") numToggle.checked = saved.numbers;
             }
-        } catch(e) { 
-            console.log("Settings load error or fresh start:", e); 
-        }
+        } catch(e) { console.log(e); }
     }
 
-    // --- NUDI RENDERER ---
+    // --- KEYBOARD RENDERER ---
     function toggleKeyboard() {
         const btn = document.getElementById('toggleKbdBtn');
         const isShowing = keyboardContainer.classList.toggle('show');
-        btn.innerText = isShowing ? "Hide On-Screen Keyboard" : "Show On-Screen Keyboard";
+        btn.innerText = isShowing ? "Hide Keyboard" : "Show Keyboard";
+    }
+	
+	function handleOSKBackspace() {
+        const start = editor.selectionStart;
+        if (start !== editor.selectionEnd || start === 0) {
+            // Standard delete for selection or start
+            document.execCommand('delete'); 
+            state.lastInput = "";
+            editor.focus();
+            return;
+        }
+
+        // Apply Sampurna Smart Logic if active
+        if (activeMap.name === "Sampurna") {
+            const val = editor.value;
+            const char1 = val.substring(start - 1, start);
+            const char2 = (start > 1) ? val.substring(start - 2, start - 1) : null;
+
+            const isConsonant = (c) => {
+                 if(!c) return false;
+                 const code = c.charCodeAt(0);
+                 return (code >= 0x0C95 && code <= 0x0CB9) || code === 0x0CDE || code === 0x0CB1;
+            };
+            const isMatra = (c) => {
+                if(!c) return false;
+                const code = c.charCodeAt(0);
+                return (code >= 0x0CBE && code <= 0x0CCC && code !== 0x0CCD) || 
+                       (code >= 0x0C01 && code <= 0x0C03) || 
+                       (code === 0x0CD5 || code === 0x0CD6);
+            };
+
+            // 1. Delete Consonant + Virama
+            if (char1 === VIRAMA && isConsonant(char2)) {
+                 const newVal = val.substring(0, start - 2) + val.substring(start);
+                 editor.value = newVal; editor.setSelectionRange(start - 2, start - 2); state.lastInput = ""; editor.focus(); return;
+            }
+            // 2. Revert Consonant + Matra -> Consonant + Virama
+            if (isMatra(char1) && isConsonant(char2)) {
+                const newVal = val.substring(0, start - 1) + VIRAMA + val.substring(start);
+                editor.value = newVal; editor.setSelectionRange(start, start); state.lastInput = ""; editor.focus(); return;
+            }
+            // 3. Revert Consonant -> Consonant + Virama
+            if (isConsonant(char1)) {
+                 const newVal = val.substring(0, start) + VIRAMA + val.substring(start);
+                 editor.value = newVal; editor.setSelectionRange(start + 1, start + 1); state.lastInput = ""; editor.focus(); return;
+            }
+        }
+
+        // Default Fallback
+        document.execCommand('delete');
+        state.lastInput = "";
+        editor.focus();
     }
 
-    function renderKeyboard() {
-        keyboardContainer.innerHTML = "";
+	function renderKeyboard() {
+        const layer = document.getElementById('qwerty-layer');
+        layer.innerHTML = "";
+        
+        const isEng = engToggle.checked; 
+        const isNum = numToggle.checked; 
+
         kbdDefinition.forEach(rowInfo => {
             const div = document.createElement('div');
             div.className = `kbd-row row-${rowInfo.row}`;
+            
+            // Shift Key (Row 3)
             if(rowInfo.row === 3) {
                 const sBtn = document.createElement('div');
                 sBtn.className = isShifted ? "key-cap shift-key active" : "key-cap shift-key";
@@ -525,19 +581,58 @@
                 sBtn.onclick = () => { isShifted = !isShifted; renderKeyboard(); };
                 div.appendChild(sBtn);
             }
+
             rowInfo.keys.forEach(key => {
+                // --- SPECIAL KEYS HANDLING ---
+                if (key === "BACKSPACE") {
+                    const btn = document.createElement('div');
+                    btn.className = "key-cap wide";
+                    btn.innerHTML = `⌫`;
+                    btn.onclick = () => handleOSKBackspace();
+                    div.appendChild(btn);
+                    return;
+                }
+                if (key === "ENTER") {
+                    const btn = document.createElement('div');
+                    btn.className = "key-cap wide";
+                    btn.innerHTML = `⏎`;
+                    btn.onclick = () => insertDirect('\n');
+                    div.appendChild(btn);
+                    return;
+                }
+                if (key === "SPACE") {
+                    const btn = document.createElement('div');
+                    btn.className = "key-cap extra-wide";
+                    btn.innerHTML = `SPACE`;
+                    btn.onclick = () => insertDirect(' ');
+                    div.appendChild(btn);
+                    return;
+                }
+
+                // --- STANDARD KEYS ---
                 const char = isShifted ? key.toUpperCase() : key.toLowerCase();
                 let glyph = char;
-                if(activeMap.consonants && activeMap.consonants[char]) glyph = activeMap.consonants[char];
-                else if(activeMap.vowels && activeMap.vowels[char]) glyph = activeMap.vowels[char];
-                if(char === 'f') glyph = '್'; 
+                
+                // Priority: Numbers > English Mode > Standard Map
+                if (isNum && commonNumbers[char]) {
+                    glyph = commonNumbers[char];
+                } else if (!isEng) {
+                    if(activeMap.consonants && activeMap.consonants[char]) glyph = activeMap.consonants[char];
+                    else if(activeMap.vowels && activeMap.vowels[char]) glyph = activeMap.vowels[char];
+                    if(char === 'f' && activeMap.name.includes("Nudi")) glyph = '್'; 
+                }
+                
                 const btn = document.createElement('div');
                 btn.className = "key-cap";
                 btn.innerHTML = `<span class="glyph">${glyph}</span><span class="key-label">${char}</span>`;
-                btn.onclick = () => handleVisualKeyClick(char);
+                btn.onclick = () => {
+                    if (isNum && commonNumbers[char]) insertDirect(commonNumbers[char]);
+                    else if (isEng) insertDirect(char);
+                    else handleVisualKeyClick(char);
+                };
                 div.appendChild(btn);
             });
-            keyboardContainer.appendChild(div);
+            layer.appendChild(div);
         });
     }
 
@@ -547,7 +642,8 @@
         editor.value = current.slice(0, start) + char + current.slice(start);
         editor.focus();
         editor.setSelectionRange(start + 1, start + 1);
-        processVisualInput(char, start + 1);
+        if(activeMap.isVisual) processVisualInput(char, start + 1);
+        else processPhoneticInput(char, start + 1);
     }
 
     // --- MEMORY ---
@@ -558,10 +654,9 @@
             const num = idx + 1;
             const btn = document.createElement('div');
             btn.className = text ? "mem-slot" : "mem-slot empty";
-            if(text) btn.title = `Saved: "${text}"\nClick or press Alt+${num} to insert.`;
-            else btn.title = `Empty Slot ${num}\nSelect text and press Ctrl+Alt+${num} to save.`;
             let displayTxt = text ? (text.length > 15 ? text.substring(0,12)+"..." : text) : "Empty";
             btn.innerHTML = `<span class="mem-shortcut">Alt+${num}</span> <span>${displayTxt}</span>`;
+            btn.title = text ? `Saved: "${text}"` : `Empty Slot ${num}`;
             btn.onclick = () => { if(text) insertPhrase(idx); else showToast(`Select text & Press Ctrl+Alt+${num} to save`); };
             bar.appendChild(btn);
         });
@@ -573,7 +668,7 @@
         if (start === end) { showToast("No text selected to save!"); return; }
         phraseMemory[idx] = editor.value.substring(start, end);
         renderMemoryBar();
-        saveSettings(); // Save on update
+        saveSettings(); 
         showToast(`Phrase saved to Slot ${idx+1}`);
     }
 
@@ -588,11 +683,8 @@
         if (!activeMap.isVisual) {
             const btnB = document.createElement('button');
             btnB.className = "v-btn control";
-            
-            // Customize Label based on scheme
             let label = activeMap.name === "Sampurna" ? "=" : "~";
             let labelDesc = activeMap.name === "Sampurna" ? "Break" : "Halant Break";
-            
             btnB.innerHTML = label + ` <small>[${labelDesc}]</small>`;
             btnB.onclick = () => insertChar(label);
             vKeypad.appendChild(btnB);
@@ -611,12 +703,22 @@
             btnZ.onclick = () => insertChar(activeMap.zwjKey);
             vKeypad.appendChild(btnZ);
         }
+        
+        // Define keys that should be blue (Vedic/Special)
+        const vedicKeys = ["।", "॥", "ಗ್ಂ", "ಗ್ಗ್", "ꣳ", "॒", "॑", "᳚", "ಽ"];
+
         if(activeMap.buttons) {
             activeMap.buttons.forEach(char => {
                 const btn = document.createElement('button');
                 btn.className = "v-btn";
+                
+                // Clean display text to check against vedic list
                 let display = char.replace(ZWNJ, '').replace(ZWJ, '');
-                if(['।', '॥', '॒','॑','᳚','ꣳ','ಽ','ಗ್ಂ', 'ಗ್ಗ್'].includes(display)) btn.className += " vedic";
+                
+                if (vedicKeys.includes(display)) {
+                    btn.className += " vedic";
+                }
+                
                 btn.innerText = display;
                 btn.onclick = () => insertDirect(char);
                 vKeypad.appendChild(btn);
@@ -633,7 +735,7 @@
                 html += `</div>`; grid.innerHTML += html;
             });
         }
-        grid.innerHTML += `<div class="help-box"><h3>Shortcuts</h3>
+        grid.innerHTML += `<div class="help-box"><h3>Mode Switch</h3>
             ${!activeMap.isVisual ? '<div class="row"><span class="key">Alt+A</span> <span>Auto Anusvara</span></div>' : ''}
             <div class="row"><span class="key">Alt+M</span> <span>Mantra</span></div>
             <div class="row"><span class="key">Alt+N</span> <span>Numbers</span></div>
@@ -667,9 +769,9 @@
     }
 
     editor.addEventListener('keydown', (e) => {
-        if (e.key === 'Shift') { isShifted = true; if(activeMap.isVisual) renderKeyboard(); }
+        if (e.key === 'Shift') { isShifted = true; renderKeyboard(); }
 
-        // --- SAMPURNA SMART BACKSPACE LOGIC ---
+        // --- SAMPURNA SMART BACKSPACE ---
         if (e.key === 'Backspace' && activeMap.name === "Sampurna" && !e.ctrlKey && !e.altKey && !e.shiftKey) {
             const start = editor.selectionStart;
             if (start === editor.selectionEnd && start > 0) {
@@ -690,32 +792,20 @@
                            (code === 0x0CD5 || code === 0x0CD6);
                 };
 
-                // 1. Delete Consonant + Virama
                 if (char1 === VIRAMA && isConsonant(char2)) {
                      e.preventDefault();
                      const newVal = val.substring(0, start - 2) + val.substring(start);
-                     editor.value = newVal;
-                     editor.setSelectionRange(start - 2, start - 2);
-                     state.lastInput = ""; 
-                     return;
+                     editor.value = newVal; editor.setSelectionRange(start - 2, start - 2); state.lastInput = ""; return;
                 }
-                // 2. Revert Consonant + Matra -> Consonant + Virama
                 if (isMatra(char1) && isConsonant(char2)) {
                     e.preventDefault();
                     const newVal = val.substring(0, start - 1) + VIRAMA + val.substring(start);
-                    editor.value = newVal;
-                    editor.setSelectionRange(start, start);
-                    state.lastInput = "";
-                    return;
+                    editor.value = newVal; editor.setSelectionRange(start, start); state.lastInput = ""; return;
                 }
-                // 3. Revert Consonant -> Consonant + Virama
                 if (isConsonant(char1)) {
                      e.preventDefault();
                      const newVal = val.substring(0, start) + VIRAMA + val.substring(start);
-                     editor.value = newVal;
-                     editor.setSelectionRange(start + 1, start + 1);
-                     state.lastInput = ""; 
-                     return;
+                     editor.value = newVal; editor.setSelectionRange(start + 1, start + 1); state.lastInput = ""; return;
                 }
             }
         }
@@ -739,6 +829,9 @@
                 saveSettings(); // Save on toggle
                 showToast(msg); 
                 state.lastInput = ""; 
+                
+                // If English mode changed via shortcut, refresh keyboard
+                if(msg.includes("Eng")) renderKeyboard();
                 return; 
             }
         }
@@ -746,7 +839,7 @@
         if (e.key === 'Backspace') state.lastInput = "";
     });
 
-    editor.addEventListener('keyup', (e) => { if (e.key === 'Shift') { isShifted = false; if(activeMap.isVisual) renderKeyboard(); } });
+    editor.addEventListener('keyup', (e) => { if (e.key === 'Shift') { isShifted = false; renderKeyboard(); } });
 
     editor.addEventListener('input', (e) => {
         if (e.inputType === 'insertFromPaste') { state.lastInput = ""; return; }
@@ -766,7 +859,6 @@
         if (char === 'f' && state.lastInput === 'f') { applyToEditor(cursorPos, 1, ZWNJ, 'special', 'ff'); return; }
         if (char === 'F' && state.lastType === 'consonant') { output = (state.lastInput === 'r') ? ZWJ + VIRAMA : VIRAMA + "ರ"; applyToEditor(cursorPos, 1, output, 'consonant', 'F'); return; }
 
-        // SPECIAL NUDI X HANDLING
         if (activeMap.name.includes("Nudi") && char === 'X') {
              if(state.lastInput === 'r') { applyToEditor(cursorPos, 2, "ಱ", 'consonant', 'X'); return; }
              if(state.lastInput === 'R') { 
@@ -790,7 +882,6 @@
     }
 
     function processPhoneticInput(charTyped, cursorPos) {
-        // 1. PREFIX BREAK LOGIC (Baraha ~)
         if (isBreakKeyPrefix && state.lastInput === activeMap.breakKey) {
             const combo = state.lastInput + charTyped;
             const isValid = activeMap.consonants[combo] || (activeMap.specials && activeMap.specials[combo]) || activeMap.vowels[combo];
@@ -800,12 +891,10 @@
             }
         }
 
-        // 2. FORCE HALANT
         if (activeMap.forceHalantKey && charTyped === activeMap.forceHalantKey) {
             applyToEditor(cursorPos, 1, ZWNJ, 'special', ""); return;
         }
 
-        // 3. SOFT BREAK
         if (!isBreakKeyPrefix && charTyped === activeMap.breakKey) {
             applyToEditor(cursorPos, 1, "", 'special', ""); 
             state.lastInput = ""; 
