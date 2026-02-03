@@ -316,7 +316,7 @@ const schemes = {
         sampurna: {
             name: "Sampurna",
             isVisual: false,
-            breakKey: '=',        
+            breakKey: '&',        
             forceHalantKey: '^',  
             zwjKey: 'x',   
             vowels: { 
@@ -354,7 +354,7 @@ const schemes = {
                 "C" : "೧॒॑", "V" : "೨॒॑", "B" : "೩॒॑"
             },
             help: [
-                { title: "Control Keys", rows: [["=", "Soft Break (k=h → ಕ್ಹ)"], ["^", "Force Halant (k^h -> ಕ್‌ಹ)"], ["x", "ZWJ (rxya → ರ‍್ಯ, Axypal → ಆ್ಯಪಲ್)"]] },
+                { title: "Control Keys", rows: [["&", "Soft Break (k&h → ಕ್ಹ)"], ["^", "Force Halant (k^h -> ಕ್‌ಹ)"], ["x", "ZWJ (rxya → ರ‍್ಯ, Axypal → ಆ್ಯಪಲ್)"]] },
                 { title: "Specials/Nukta", rows: [["M", "[ಂ] ಅನುಸ್ವಾರ"], ["MM", "[ಁ]  ಚಂದ್ರಬಿಂದು"], ["H", "[ಃ] ವಿಸರ್ಗ"], ["Rh", "[ಱ]  ಶಕಟ ರೇಫ (ṟa)"], ["RH", "[ೞ] (ḻa)"], ["z", " [಼] ನುಕ್ತ [ saz → ಸ಼] "], ["f, Z, Zh", "ಫ಼್, ಜ಼್,  ಝ಼್"]] },
                 { title: "Mantra Mode shortcuts", rows: [["/", "[॒] ಅನುದಾತ್ತ (ka/ → ಕ॒)"], ["\'", "[॑] ಸ್ವರಿತ (ka' → ಕ॑)"], ["\"", "[᳚] ದೀರ್ಘ ಸ್ವರಿತ (ka\" → ಕ᳚)"],  ["@", "[ಗ್ಂ]"], ["#", "[ಗ್ಗ್]"], ["$", "[ಽ] ಅವಗ್ರಹ"], ["| or \\", "[।] ದಂಡ"], ["|| or \\\\", "[॥] 2 ದಂಡ"], ["C,V,B","೧॒॑, ೨॒॑, ೩॒॑"]] }
 
@@ -717,13 +717,18 @@ const schemes = {
         showToast(`Inserted phrase from Slot ${idx+1}`);
     }
 
-    function updateVirtualKeys() {
+function updateVirtualKeys() {
         vKeypad.innerHTML = "";
+        
+        // 1. Functional Control Buttons (Execute Logic)
         if (!activeMap.isVisual) {
             const btnB = document.createElement('button');
             btnB.className = "v-btn control";
-            let label = activeMap.name === "Sampurna" ? "=" : "~";
+            
+            // Customize Label based on scheme
+            let label = activeMap.name === "Sampurna" ? "&" : "~"; // Updated label for Sampurna
             let labelDesc = activeMap.name === "Sampurna" ? "Break" : "Halant Break";
+            
             btnB.innerHTML = label + ` <small>[${labelDesc}]</small>`;
             btnB.onclick = () => insertChar(label);
             vKeypad.appendChild(btnB);
@@ -742,8 +747,24 @@ const schemes = {
             btnZ.onclick = () => insertChar(activeMap.zwjKey);
             vKeypad.appendChild(btnZ);
         }
-        
-        // Define keys that should be blue (Vedic/Special)
+
+        // 2. NEW: Literal / Printable Control Keys
+        // These buttons insert the character literally, bypassing the control logic
+        let literals = [];
+        if(activeMap.name === "Sampurna") literals = ["&", "^", "x"];
+        else if(activeMap.name === "Baraha") literals = ["~", "^"];
+
+        literals.forEach(char => {
+            const btn = document.createElement('button');
+            btn.className = "v-btn";
+            btn.style.backgroundColor = "#e0e0e0"; // Slightly different color to indicate literal
+            btn.innerText = char;
+            btn.title = `Insert "${char}" character`;
+            btn.onclick = () => insertDirect(char); // Insert directly without logic
+            vKeypad.appendChild(btn);
+        });
+
+        // 3. Vedic/Standard Mapped Buttons
         const vedicKeys = ["।", "॥", "ಗ್ಂ", "ಗ್ಗ್", "ꣳ", "॒", "॑", "᳚", "ಽ"];
 
         if(activeMap.buttons) {
@@ -751,7 +772,6 @@ const schemes = {
                 const btn = document.createElement('button');
                 btn.className = "v-btn";
                 
-                // Clean display text to check against vedic list
                 let display = char.replace(ZWNJ, '').replace(ZWJ, '');
                 
                 if (vedicKeys.includes(display)) {
@@ -764,7 +784,7 @@ const schemes = {
             });
         }
     }
-
+	
     function updateHelpGrid() {
         const grid = document.getElementById('helpGrid'); grid.innerHTML = "";
         if(activeMap.help) {
