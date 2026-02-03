@@ -118,8 +118,23 @@
         .key-cap .key-label { font-size: 10px; color: #757575; margin-top: 2px; font-weight: bold;}
         .key-cap.active .glyph, .key-cap.active .key-label { color: white; }
 
+		/* Multigraph Row Styles */
+        .multigraph-row { 
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; 
+            margin-bottom: 10px; padding-bottom: 10px; 
+            border-bottom: 1px solid #dcdcdc; width: 100%; 
+        }
+        .key-cap.multi { 
+            width: 45px; height: 45px; 
+            background: #e3f2fd; border-color: #90caf9; 
+        }
+        .key-cap.multi .glyph { font-size: 16px; color: #0277bd; }
+        .key-cap.multi .key-label { color: #546e7a; font-size: 10px; font-weight: bold;}
+        .key-cap.multi:hover { background: #bbdefb; }
+        .key-cap.multi:active { background: #64b5f6; color: white; }
+		
 		/* Special Keys */
-		.key-cap.wide { width: 85px; font-size: 16px; font-weight: bold; background: #ffe0b2; color: #bf360c; }
+		.key-cap.wide { width: 75px; font-size: 16px; font-weight: bold; background: #ffe0b2; color: #bf360c; }
 		.key-cap.extra-wide { width: 300px; font-weight: bold; color: #bf360c; }
 		.key-cap.wide:active, .key-cap.extra-wide:active { background: #ffcc80; }
 
@@ -193,7 +208,7 @@
 
 <div class="container">
     <h1>⌨️ Kannada Keyboard (Transliterator)</h1>
-    <span class="subtitle">Supported Transliteration Schemes:  1)ಸಂಪೂರ್ಣ[Our Custom scheme], 2)ಬರಹ and 3)ನುಡಿ [ಕಗಪ] Key layout. Change the scheme by selecting INPUT SCHEME below.</span>
+    <span class="subtitle">Supported Transliteration Schemes: 1)ಸಂಪೂರ್ಣ[Our Custom scheme], 2)ಬರಹ and 3)ನುಡಿ [ಕಗಪ] Key layout. Change the scheme by selecting INPUT SCHEME below.</span>
 
     <div class="toolbar">
         <div class="control-group">
@@ -233,6 +248,7 @@
     <div class="memory-bar" id="memoryBar"></div>
 
     <div id="keyboard" class="kbd-container">
+		<div id="multigraph-layer" class="multigraph-row"></div>
         <div id="qwerty-layer"></div>
     </div>
 
@@ -282,7 +298,7 @@
         { row: 1, keys: "qwertyuiop".split("") },
         { row: 2, keys: "asdfghjkl".split("").concat(["ENTER"]) },
         { row: 3, keys: "zxcvbnm".split("") },
-        { row: 4, keys: ["SPACE"] }
+	    { row: 4, keys: ["SPACE"] }
     ];
 	
     const emojis = {
@@ -564,16 +580,40 @@ const schemes = {
 
 	function renderKeyboard() {
         const layer = document.getElementById('qwerty-layer');
+        const multiLayer = document.getElementById('multigraph-layer');
         layer.innerHTML = "";
+        multiLayer.innerHTML = ""; // Clear previous multigraphs
         
         const isEng = engToggle.checked; 
         const isNum = numToggle.checked; 
 
+        // --- 1. RENDER MULTIGRAPH ROW (For Phonetic Schemes only) ---
+        if (!isEng && !activeMap.isVisual && activeMap.consonants) {
+            let hasMultis = false;
+            // Iterate through consonants to find multigraphs (keys length > 1)
+            for (let key in activeMap.consonants) {
+                if (key.length > 1 && /^[a-zA-Z]+$/.test(key)) { // Filter for letters only (ignore special chars)
+                    hasMultis = true;
+                    const glyph = activeMap.consonants[key];
+                    
+                    const btn = document.createElement('div');
+                    btn.className = "key-cap multi";
+                    btn.innerHTML = `<span class="glyph">${glyph}</span><span class="key-label">${key}</span>`;
+                    btn.onclick = () => insertDirect(glyph); // Insert the resulting character directly
+                    multiLayer.appendChild(btn);
+                }
+            }
+            // Hide the layer if no multigraphs found (e.g. Nudi or empty)
+            multiLayer.style.display = hasMultis ? "flex" : "none";
+        } else {
+            multiLayer.style.display = "none";
+        }
+
+        // --- 2. RENDER STANDARD QWERTY ROWS ---
         kbdDefinition.forEach(rowInfo => {
             const div = document.createElement('div');
             div.className = `kbd-row row-${rowInfo.row}`;
             
-            // Shift Key (Row 3)
             if(rowInfo.row === 3) {
                 const sBtn = document.createElement('div');
                 sBtn.className = isShifted ? "key-cap shift-key active" : "key-cap shift-key";
@@ -583,7 +623,7 @@ const schemes = {
             }
 
             rowInfo.keys.forEach(key => {
-                // --- SPECIAL KEYS HANDLING ---
+                // Special Keys
                 if (key === "BACKSPACE") {
                     const btn = document.createElement('div');
                     btn.className = "key-cap wide";
@@ -609,11 +649,10 @@ const schemes = {
                     return;
                 }
 
-                // --- STANDARD KEYS ---
+                // Standard Keys
                 const char = isShifted ? key.toUpperCase() : key.toLowerCase();
                 let glyph = char;
                 
-                // Priority: Numbers > English Mode > Standard Map
                 if (isNum && commonNumbers[char]) {
                     glyph = commonNumbers[char];
                 } else if (!isEng) {
