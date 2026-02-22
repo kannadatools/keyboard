@@ -710,17 +710,39 @@ const schemes = {
     }
 
     // --- MEMORY ---
-    function renderMemoryBar() {
+	function renderMemoryBar() {
         const bar = document.getElementById('memoryBar');
-        bar.innerHTML = "";
+        bar.innerHTML = '<span class="memory-label">Memory </span>';
         phraseMemory.forEach((text, idx) => {
             const num = idx + 1;
             const btn = document.createElement('div');
-            btn.className = text ? "mem-slot" : "mem-slot empty";
-            let displayTxt = text ? (text.length > 15 ? text.substring(0,12)+"..." : text) : "Empty";
-            btn.innerHTML = `<span class="mem-shortcut">Alt+${num}</span> <span>${displayTxt}</span>`;
-            btn.title = text ? `Saved: "${text}"` : `Empty Slot ${num}`;
-            btn.onclick = () => { if(text) insertPhrase(idx); else showToast(`Select text & Press Ctrl+Alt+${num} to save`); };
+            btn.className = text ? "mem-slot has-phrase" : "mem-slot";
+            let displayTxt = text ? text : "Empty Slot";
+            
+            btn.innerHTML = `<span class="slot-num">Alt+${num}</span><span>${displayTxt}</span>`;
+            
+            // Update tooltip to indicate the new clear feature
+            btn.title = text 
+                ? `Saved: "${text}"\nRight-click to clear this slot.` 
+                : `Empty Slot ${num}. Select text & press Ctrl+Alt+${num} to save.`;
+            
+            // Left click to insert
+            btn.onclick = () => { 
+                if(text) insertPhrase(idx); 
+                else showToast(`Slot ${num} is empty. Select text and press Ctrl+Alt+${num} to save.`); 
+            };
+            
+            // Right click (or long-press) to clear
+            btn.oncontextmenu = (e) => {
+                e.preventDefault(); // Prevent the default browser menu from popping up
+                if(text) {
+                    phraseMemory[idx] = ""; // Clear the memory
+                    saveSettings();         // Save the empty state to localStorage
+                    renderMemoryBar();      // Re-render the bar
+                    showToast(`Slot ${num} cleared`);
+                }
+            };
+            
             bar.appendChild(btn);
         });
     }
