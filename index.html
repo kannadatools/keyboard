@@ -433,7 +433,9 @@ const schemes = {
     let isShifted = false; 
 
     const editor = document.getElementById('editor');
-    const autoAnusvaraToggle = document.getElementById('autoAnusvara');
+	editor.addEventListener('input', saveTextToStorage);
+	
+	const autoAnusvaraToggle = document.getElementById('autoAnusvara');
     const mantraToggle = document.getElementById('mantraMode');
     const numToggle = document.getElementById('numMode');
     const engToggle = document.getElementById('engMode');
@@ -463,7 +465,11 @@ const schemes = {
         renderMemoryBar();
         editor.focus();
         state = { lastInput: "", lastOutput: "", lastType: "" };
-
+		try {
+            const savedText = localStorage.getItem("kTransEditorText_v7");
+            if (savedText !== null) editor.value = savedText;
+        } catch(e) {}
+		
 		// Attach Save triggers
         autoAnusvaraToggle.onclick = saveSettings;
         mantraToggle.onclick = saveSettings;
@@ -497,7 +503,8 @@ const schemes = {
             autoAnusvara: autoAnusvaraToggle.checked,
             mantra: mantraToggle.checked,
             numbers: numToggle.checked,
-            memory: phraseMemory
+            memory: phraseMemory,
+            kbdVisible: keyboardContainer.classList.contains('show') // <-- NEW
         };
         try { localStorage.setItem("kTransSettings", JSON.stringify(settings)); } catch (e) { console.warn(e); }
     }
@@ -513,15 +520,28 @@ const schemes = {
                 if(typeof saved.autoAnusvara === "boolean") autoAnusvaraToggle.checked = saved.autoAnusvara;
                 if(typeof saved.mantra === "boolean") mantraToggle.checked = saved.mantra;
                 if(typeof saved.numbers === "boolean") numToggle.checked = saved.numbers;
+
+				// --- NEW: Restore OSK State ---
+                if(typeof saved.kbdVisible === "boolean") {
+                    const btn = document.getElementById('toggleKbdBtn');
+                    if (saved.kbdVisible) {
+                        document.getElementById('keyboard').classList.add('show');
+                        btn.innerText = "Hide Keyboard";
+                    } else {
+                        document.getElementById('keyboard').classList.remove('show');
+                        btn.innerText = "Show Keyboard";
+                    }
+                }
             }
         } catch(e) { console.log(e); }
     }
 
     // --- KEYBOARD RENDERER ---
-    function toggleKeyboard() {
+	function toggleKeyboard() {
         const btn = document.getElementById('toggleKbdBtn');
         const isShowing = keyboardContainer.classList.toggle('show');
         btn.innerText = isShowing ? "Hide Keyboard" : "Show Keyboard";
+        saveSettings(); // <-- NEW: Save state when toggled
     }
 	
 	function handleOSKBackspace() {
@@ -574,6 +594,12 @@ const schemes = {
         document.execCommand('delete');
         state.lastInput = "";
         editor.focus();
+
+		saveTextToStorage();
+    }
+
+	function saveTextToStorage() {
+        try { localStorage.setItem("kTransEditorText_v7", editor.value); } catch(e) {}
     }
 
 	function renderKeyboard() {
@@ -818,6 +844,7 @@ function updateVirtualKeys() {
         editor.focus();
         editor.setSelectionRange(start + char.length, start + char.length);
         state.lastInput = ""; 
+		saveTextToStorage();
     }
 
     function handleBreak() {
@@ -1061,6 +1088,8 @@ function updateVirtualKeys() {
         const newPos = preText.length + output.length;
         editor.setSelectionRange(newPos, newPos);
         state.lastInput = keyString; state.lastOutput = output; state.lastType = type;
+
+		saveTextToStorage();
     }
 
     // --- UTILS ---
@@ -1116,7 +1145,14 @@ function updateVirtualKeys() {
 
     function saveText() { const b = new Blob([editor.value], {type:'text/plain;charset=utf-8'}); const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download="kannada_text.txt"; a.click(); }
     function copyText() { editor.select(); document.execCommand('copy'); showToast("Copied!"); }
-    function clearText() { if(confirm('Clear?')){ editor.value=''; state.lastInput=''; } }
+
+	function clearText() { 
+        if(confirm('Clear?')){ 
+            editor.value=''; state.lastInput=''; 
+            try { localStorage.removeItem("kTransEditorText_v7"); } catch(e) {} // <-- NEW
+        } 
+    }
+	
 </script>
 </body>
 </html>
